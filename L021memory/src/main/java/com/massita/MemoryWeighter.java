@@ -25,6 +25,7 @@ public class MemoryWeighter {
         }
 
         long memoryAtFinish = getMem();
+        int fake = array.length;
         return (memoryAtFinish - memoryAtStart) / numOfWeights;
     }
 
