@@ -91,8 +91,7 @@ public class MyArrayList<E> implements List<E> {
     public boolean remove(Object o) {
         for (int i = 0; i < currentSize; i++) {
             if (internalStorage[i] == o) {
-                internalStorage[i] = null;
-                currentSize--;
+                removeFromInternalByIndex(i);
                 return true;
             }
         }
@@ -101,8 +100,7 @@ public class MyArrayList<E> implements List<E> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        //not implemented yet
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -113,17 +111,17 @@ public class MyArrayList<E> implements List<E> {
 
     @Override
     public boolean addAll(int index, Collection<? extends E> c) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -153,45 +151,129 @@ public class MyArrayList<E> implements List<E> {
 
     @Override
     public void add(int index, E element) {
-        //not implemented yet
+        checkIndexInBound(index);
+        addElementToInternalByIndex(index, element);
+
+    }
+
+    private void addElementToInternalByIndex(int index, E element) {
+        if (isNeedToExpandStorage()) {
+            expandArray();
+        }
+        if (index == currentSize - 1) {
+            internalStorage[currentSize++] = element;
+        } else {
+            Object[] newInternalArray = new Object[internalStorage.length];
+            for (int i = 0; i < currentSize; i++) {
+                if (i < index) {
+                    newInternalArray[i] = internalStorage[i];
+                } else if ( i == index) {
+                    newInternalArray[i] = element;
+                } else {
+                    newInternalArray[i] = internalStorage[i-1];
+                }
+            }
+            currentSize++;
+            internalStorage = newInternalArray;
+        }
     }
 
     @Override
     public E remove(int index) {
-        //not implemented yet
-        return null;
+        checkIndexInBound(index);
+        E result = removeFromInternalByIndex(index);
+        return result;
+    }
+
+    private E removeFromInternalByIndex(int index) {
+        E result = (E) internalStorage[index];
+        if (index == currentSize - 1) {
+            currentSize--;
+        } else {
+
+            internalStorage[index] = null;
+            Object[] newInternalArray = Arrays.stream(internalStorage).filter(el -> el != null).toArray();
+            internalStorage = Arrays.copyOf(newInternalArray, internalStorage.length);
+        }
+        return result;
     }
 
     @Override
     public int indexOf(Object o) {
-        //not implemented yet
-        return 0;
+        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        //not implemented yet
-        return 0;
+        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public ListIterator<E> listIterator() {
 
-        return (ListIterator<E>) Arrays.asList(internalStorage).stream()
-                .limit(currentSize)
-                .collect(Collectors.toList())
-                .listIterator();
+
+
+        return new ListIterator<E>() {
+
+            int currentIteratorPosition = -1;
+            @Override
+            public boolean hasNext() {
+                return currentSize > currentIteratorPosition;
+            }
+
+            @Override
+            public E next() {
+                return (E) internalStorage[++currentIteratorPosition];
+            }
+
+            @Override
+            public boolean hasPrevious() {
+                return currentIteratorPosition > 0;
+            }
+
+            @Override
+            public E previous() {
+                return (E) internalStorage[--currentIteratorPosition];
+            }
+
+            @Override
+            public int nextIndex() {
+                return currentIteratorPosition + 1;
+            }
+
+            @Override
+            public int previousIndex() {
+                return currentIteratorPosition - 1;
+            }
+
+            @Override
+            public void remove() {
+                removeFromInternalByIndex(currentIteratorPosition);
+            }
+
+            @Override
+            public void set(E e) {
+                internalStorage[currentIteratorPosition] = e;
+            }
+
+            @Override
+            public void add(E e) {
+                addElementToInternalByIndex(currentIteratorPosition, e);
+            }
+        };
     }
 
     @Override
     public ListIterator<E> listIterator(int index) {
-        //not implemented yet
-        return null;
+        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        //not implemented yet
-        return null;
-    }
+        throw new UnsupportedOperationException();
+
+}
 }

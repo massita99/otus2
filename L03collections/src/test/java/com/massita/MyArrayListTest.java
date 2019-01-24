@@ -14,6 +14,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 
 public class MyArrayListTest {
 
@@ -161,6 +162,55 @@ public class MyArrayListTest {
     public void expandTest() {
         Collections.addAll(intTestList, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
         assertThat(12, is(intTestList.size()));
+    }
+
+    @Test
+    public void removeByIndex() {
+        intTestList.add(1);
+        intTestList.add(2);
+        intTestList.remove(0);
+        assertThat(2, is(intTestList.get(0)));
+    }
+
+    @Test
+    public void AddByIndex() {
+        intTestList.add(1);
+        intTestList.add(2);
+        intTestList.add(0, 5);
+        assertThat(5, is(intTestList.get(0)));
+    }
+
+
+    @Test
+    public void copyBigListTest() {
+        intTestList.add(1);
+        intTestList.add(2);
+        intTestList.add(3);
+        intTestList.add(4);
+        intTestList.add(5);
+        intTestList.add(6);
+        intTestList.add(7);
+        intTestList.add(8);
+        intTestList.add(9);
+        intTestList.add(10);
+        intTestList.add(11);
+
+        List<Integer> copyOfIntTestList = new MyArrayList<>();
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+        copyOfIntTestList.add(0);
+
+        Collections.copy(copyOfIntTestList, intTestList);
+
+        assertArrayEquals(intTestList.toArray(), copyOfIntTestList.toArray());
     }
 
 }
