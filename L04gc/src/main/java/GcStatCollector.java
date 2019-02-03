@@ -30,6 +30,11 @@ public class GcStatCollector {
             NotificationListener listener = new NotificationListener() {
                 //keep a count of the total time spent in GCs
                 long totalGcDuration = 0;
+                long totalGcCount = 0;
+                long minorGcCount = 0;
+                long minorGcDuration = 0;
+                long fullGcCount = 0;
+                long fullGcDuration = 0;
 
                 //implement the notifier callback handler
                 @Override
@@ -43,8 +48,16 @@ public class GcStatCollector {
                         String gctype = info.getGcAction();
                         if ("end of minor GC".equals(gctype)) {
                             gctype = "Young Gen GC";
+                            minorGcCount++;
+                            minorGcDuration += info.getGcInfo().getDuration();
+                            logger.info(gctype + ": number - " + minorGcCount + ", time spended - " + minorGcDuration);
+
                         } else if ("end of major GC".equals(gctype)) {
                             gctype = "Old Gen GC";
+                            fullGcCount++;
+                            fullGcDuration += info.getGcInfo().getDuration();
+                            logger.info(gctype + ": number - " + fullGcCount + ", time spended - " + fullGcDuration);
+
                         }
                         logger.debug(gctype + ": - " + info.getGcInfo().getId()+ " " + info.getGcName() + " (from " + info.getGcCause()+") "+duration + " milliseconds; start-end times " + info.getGcInfo().getStartTime()+ "-" + info.getGcInfo().getEndTime());
 
