@@ -8,37 +8,31 @@ import ru.massita.framework.helpers.ReflectionHelper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedList;
 import java.util.List;
 
 public class TestRunner {
 
-    private static ThreadLocal<Integer> testCount = new ThreadLocal<>();
-
-    private static ThreadLocal<List<String>> errors = new ThreadLocal<>();
-
-    private static ThreadLocal<TestStatus> status = new ThreadLocal<>();
-
-    public static <T> void run(Class<T> clazz) {
-        init();
+    public static <T> TestResult run(Class<T> clazz) {
+        TestResult result = init();
         try {
             List<Method> testMethods = ReflectionHelper.getMethodsByAnnotation(clazz, Test.class);
             List<Method> beforeEachMethods = ReflectionHelper.getMethodsByAnnotation(clazz, BeforeEach.class);
             List<Method> afterEachMethods = ReflectionHelper.getMethodsByAnnotation(clazz, AfterEach.class);
             for (Method method : testMethods) {
-                testCount.set(testCount.get() + 1);
+                result.setTestCount(result.getTestCount() + 1);
                 T object = clazz.newInstance();
-                executeEach(beforeEachMethods, object);
-                executeTest(method, object);
-                executeEach(afterEachMethods, object);
+                executeEach(beforeEachMethods, object, result);
+                executeTest(method, object, result);
+                executeEach(afterEachMethods, object, result);
             }
         } catch (TestExecutionException | InstantiationException | IllegalAccessException e) {
-            status.set(TestStatus.ERROR);
+            result.setStatus(TestStatus.ERROR);
             e.printStackTrace();
         }
+        return result;
     }
 
-    private static void executeEach(List<Method> beforeEachMethods, Object object) throws TestExecutionException {
+    private static void executeEach(List<Method> beforeEachMethods, Object object, TestResult result) throws TestExecutionException {
         for (Method method : beforeEachMethods) {
             try {
                 method.invoke(object);
@@ -52,31 +46,18 @@ public class TestRunner {
 
 
 
-    private static void init() {
-        testCount.set(0);
-        errors.set(new LinkedList<>());
-        status.set(TestStatus.PASSED);
+    private static TestResult init() {
+        return new TestResult();
     }
 
-    private static void executeTest(Method method, Object object) {
+    private static void executeTest(Method method, Object object, TestResult result) {
         try {
             method.invoke(object);
         } catch (InvocationTargetException | IllegalAccessException e ) {
-            status.set(TestStatus.FAILED);
-            errors.get().add(e.toString());
+            result.setStatus(TestStatus.FAILED);
+            result.getErrors().add(e.toString());
         }
     }
 
 
-    public static int getTestCount() {
-        return testCount.get();
-    }
-
-    public static List<String> getErrors() {
-        return List.copyOf(errors.get());
-    }
-
-    public static TestStatus getStatus() {
-        return status.get();
-    }
 }

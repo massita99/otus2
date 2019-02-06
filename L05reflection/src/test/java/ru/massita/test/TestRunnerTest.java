@@ -1,6 +1,7 @@
 package ru.massita.test;
 
 import org.junit.Test;
+import ru.massita.framework.runner.TestResult;
 import ru.massita.framework.runner.TestRunner;
 import ru.massita.framework.runner.TestStatus;
 import ru.massita.mock.*;
@@ -14,51 +15,51 @@ public class TestRunnerTest {
 
     @Test
     public void simpleTest() {
-        TestRunner.run(SimpleTest.class);
-        assertEquals(TestRunner.getTestCount(), 2);
-        assertEquals(TestRunner.getStatus(), TestStatus.PASSED);
+        TestResult result = TestRunner.run(SimpleTest.class);
+        assertEquals(result.getTestCount(), 2);
+        assertEquals(result.getStatus(), TestStatus.PASSED);
     }
 
     @Test
     public void withErrorTest() {
-        TestRunner.run(TestWithError.class);
-        assertEquals(TestRunner.getTestCount(), 2);
-        assertEquals(TestRunner.getErrors().size(), 1);
-        assertEquals(TestRunner.getStatus(), TestStatus.FAILED);
+        TestResult result = TestRunner.run(TestWithError.class);
+        assertEquals(result.getTestCount(), 2);
+        assertEquals(result.getErrors().size(), 1);
+        assertEquals(result.getStatus(), TestStatus.FAILED);
 
     }
 
     @Test
     public void withAssertionTest() {
-        TestRunner.run(TestWithError.class);
-        assertEquals(TestRunner.getErrors().size(), 1);
-        assertEquals(TestRunner.getTestCount(), 2);
-        assertEquals(TestRunner.getStatus(), TestStatus.FAILED);
+        TestResult result = TestRunner.run(TestWithError.class);
+        assertEquals(result.getErrors().size(), 1);
+        assertEquals(result.getTestCount(), 2);
+        assertEquals(result.getStatus(), TestStatus.FAILED);
 
     }
 
     @Test
     public void beforeEachTest() {
-        TestRunner.run(BeforeEachTest.class);
-        assertEquals(TestRunner.getErrors().size(), 0);
-        assertEquals(TestRunner.getTestCount(), 2);
-        assertEquals(TestRunner.getStatus(), TestStatus.PASSED);
+        TestResult result = TestRunner.run(BeforeEachTest.class);
+        assertEquals(result.getErrors().size(), 0);
+        assertEquals(result.getTestCount(), 2);
+        assertEquals(result.getStatus(), TestStatus.PASSED);
 
     }
 
     @Test
     public void afterEachTest() {
-        TestRunner.run(AfterEachTest.class);
-        assertEquals(TestRunner.getErrors().size(), 0);
-        assertEquals(TestRunner.getTestCount(), 3);
-        assertEquals(TestRunner.getStatus(), TestStatus.PASSED);
+        TestResult result = TestRunner.run(AfterEachTest.class);
+        assertEquals(result.getErrors().size(), 0);
+        assertEquals(result.getTestCount(), 3);
+        assertEquals(result.getStatus(), TestStatus.PASSED);
 
     }
 
     @Test
     public void beforeEachErrorTest() {
-        TestRunner.run(BeforeEachErrorTest.class);
-        assertEquals(TestRunner.getStatus(), TestStatus.ERROR);
+        TestResult result = TestRunner.run(BeforeEachErrorTest.class);
+        assertEquals(result.getStatus(), TestStatus.ERROR);
     }
 
     @Test
@@ -66,13 +67,13 @@ public class TestRunnerTest {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         for (int i = 0; i<100; i++) {
             executorService.execute(() -> {
-                TestRunner.run(SimpleTest.class);
-                assertEquals(TestRunner.getStatus(), TestStatus.PASSED);
-                assertEquals(TestRunner.getTestCount(), 2);
-                TestRunner.run(TestWithError.class);
-                assertEquals(TestRunner.getErrors().size(), 1);
-                assertEquals(TestRunner.getTestCount(), 2);
-                assertEquals(TestRunner.getStatus(), TestStatus.FAILED);
+                TestResult result = TestRunner.run(SimpleTest.class);
+                assertEquals(result.getStatus(), TestStatus.PASSED);
+                assertEquals(result.getTestCount(), 2);
+                TestResult result2 = TestRunner.run(TestWithError.class);
+                assertEquals(result2.getErrors().size(), 1);
+                assertEquals(result2.getTestCount(), 2);
+                assertEquals(result2.getStatus(), TestStatus.FAILED);
 
             });
         }
