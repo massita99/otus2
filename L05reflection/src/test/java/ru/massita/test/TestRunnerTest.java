@@ -5,6 +5,9 @@ import ru.massita.framework.runner.TestRunner;
 import ru.massita.framework.runner.TestStatus;
 import ru.massita.mock.*;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static org.junit.Assert.assertEquals;
 
 public class TestRunnerTest {
@@ -56,5 +59,23 @@ public class TestRunnerTest {
     public void beforeEachErrorTest() {
         TestRunner.run(BeforeEachErrorTest.class);
         assertEquals(TestRunner.getStatus(), TestStatus.ERROR);
+    }
+
+    @Test
+    public void parallelTest() {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        for (int i = 0; i<100; i++) {
+            executorService.execute(() -> {
+                TestRunner.run(SimpleTest.class);
+                assertEquals(TestRunner.getStatus(), TestStatus.PASSED);
+                assertEquals(TestRunner.getTestCount(), 2);
+                TestRunner.run(TestWithError.class);
+                assertEquals(TestRunner.getErrors().size(), 1);
+                assertEquals(TestRunner.getTestCount(), 2);
+                assertEquals(TestRunner.getStatus(), TestStatus.FAILED);
+
+            });
+        }
+
     }
 }
