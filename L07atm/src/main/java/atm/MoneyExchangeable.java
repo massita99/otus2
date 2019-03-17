@@ -1,7 +1,11 @@
+package atm;
+
+import common.BankNote;
+
 import java.util.Currency;
 import java.util.Map;
 
-public interface MoneyExchangeable {
+public interface MoneyExchangeable extends Statable {
 
     /**
      * Return {@link Map} of {@link BankNote} type with count of them
@@ -26,7 +30,5 @@ public interface MoneyExchangeable {
      * @return value of Money
      */
     int getRemaindedValue(Currency currency);
-
-
 
 }

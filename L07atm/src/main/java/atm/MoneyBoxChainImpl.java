@@ -1,3 +1,6 @@
+package atm;
+
+import common.BankNote;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -5,7 +8,7 @@ import java.util.Currency;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MoneyBoxImpl implements MoneyBox, Comparable<MoneyBoxImpl> {
+public class MoneyBoxChainImpl implements MoneyBoxChain, Comparable<MoneyBoxChainImpl> {
 
     @Getter
     private int count = 0;
@@ -13,9 +16,9 @@ public class MoneyBoxImpl implements MoneyBox, Comparable<MoneyBoxImpl> {
     @Getter
     private BankNote banknote;
 
-    private MoneyBox nextBox;
+    private MoneyBoxChain nextBox;
 
-    public MoneyBoxImpl(BankNote banknote) {
+    public MoneyBoxChainImpl(BankNote banknote) {
         this.banknote = banknote;
     }
 
@@ -66,26 +69,45 @@ public class MoneyBoxImpl implements MoneyBox, Comparable<MoneyBoxImpl> {
     }
 
     @Override
-    public Map<BankNote, Integer> getAll(Currency currency) {
+    public Map<BankNote, Integer> popAll(Currency currency) {
         Map<BankNote, Integer> result = new HashMap<>();
         if (this.banknote.getCurrency().equals(currency) && count > 0) {
             result.put(banknote, count);
         }
         if (nextBox != null) {
-            Map<BankNote, Integer> nextBoxResult = nextBox.getAll(currency);
+            Map<BankNote, Integer> nextBoxResult = nextBox.popAll(currency);
             nextBoxResult.forEach((k, v) -> result.merge(k, v, (v1, v2) -> v1 + v2));
         }
         return result;
+    }
+
+    @Override
+    public Map<BankNote, Integer> popAll() {
+        Map<BankNote, Integer> result = new HashMap<>();
+        result.put(banknote, count);
+        if (nextBox != null) {
+            Map<BankNote, Integer> nextBoxResult = nextBox.popAll();
+            nextBoxResult.forEach((k, v) -> result.merge(k, v, (v1, v2) -> v1 + v2));
+        }
+        return result;
+    }
+
+    @Override
+    public void cleanAll() {
+        count = 0;
+        if (nextBox != null) {
+            nextBox.cleanAll();
+        }
 
     }
 
     @Override
-    public void setNext(MoneyBox nextBox) {
+    public void setNext(MoneyBoxChain nextBox) {
         this.nextBox = nextBox;
     }
 
     @Override
-    public int compareTo(MoneyBoxImpl o) {
+    public int compareTo(MoneyBoxChainImpl o) {
         return this.banknote.compareTo(o.getBanknote());
     }
 }

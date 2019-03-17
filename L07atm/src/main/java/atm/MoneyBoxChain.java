@@ -1,7 +1,11 @@
+package atm;
+
+import common.BankNote;
+
 import java.util.Currency;
 import java.util.Map;
 
-public interface MoneyBox {
+public interface MoneyBoxChain {
 
     /**
      * Try to store money in the current Box or delegate to next one
@@ -26,11 +30,22 @@ public interface MoneyBox {
      * @param currency of {@link BankNote}
      * @return {@link BankNote} of requested value
      */
-    Map<BankNote, Integer> getAll(Currency currency);
+    Map<BankNote, Integer> popAll(Currency currency);
 
     /**
-     * Set next MoneyBox if currnet can't handle all operations
+     * Return {@link Map} of {@link BankNote} type of all stored in chain notes
+     * @return {@link BankNote} of requested value
+     */
+    Map<BankNote, Integer> popAll();
+
+    /**
+     * clean current Box and all it chain
+     */
+    void cleanAll();
+
+    /**
+     * Set next atm.MoneyBoxChain if currnet can't handle all operations
      * @param nextBox
      */
-    void setNext(MoneyBox nextBox);
+    void setNext(MoneyBoxChain nextBox);
 }
