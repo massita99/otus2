@@ -13,9 +13,36 @@ import java.util.List;
 
 public class Serializer {
 
+    public String toJson(Object serializedObject) {
+
+        return serializedObject != null ? parseFieldValue(serializedObject.getClass(), serializedObject).toString() : "null";
+    }
+
+    private Object parseFieldValue(Class<?> convertedFieldType, Object convertedFieldValue) {
+
+        if (ClassUtils.isPrimitiveOrWrapper(convertedFieldType)) {
+            return convertedFieldValue;
+
+        } else if (String.class.isAssignableFrom(convertedFieldType)) {
+            return convertedFieldValue;
+
+        } else if (convertedFieldType.isArray()) {
+            return parseArray(convertedFieldValue);
+
+        } else if (Collection.class.isAssignableFrom(convertedFieldType)) {
+            return parseCollection(convertedFieldValue);
+
+        } else if (convertedFieldValue == null) {
+            return "null";
+
+        } else {
+            return parseObject(convertedFieldValue);
+        }
+    }
+
     @SneakyThrows({IllegalAccessException.class})
     //Cant throw because earlier make all field accessible
-    public JSONObject toJson(Object serializedObject) {
+    private JSONObject parseObject(Object serializedObject) {
 
         JSONObject result = new JSONObject();
 
@@ -35,28 +62,7 @@ public class Serializer {
         return result;
     }
     
-    private Object parseFieldValue(Class<?> convertedFieldType, Object convertedFieldValue) {
 
-        if (ClassUtils.isPrimitiveOrWrapper(convertedFieldType)) {
-            return convertedFieldValue;
-
-        } else if (String.class.isAssignableFrom(convertedFieldType)) {
-            return convertedFieldValue;
-
-        } else if (convertedFieldType.isArray()) {
-            return parseArray(convertedFieldValue);
-
-        } else if (Collection.class.isAssignableFrom(convertedFieldType)) {
-            return parseCollection(convertedFieldValue);
-
-        } else if (convertedFieldValue == null) {
-            return null;
-
-        } else {
-            //go to recurse if field is not primitive or array/collection
-            return toJson(convertedFieldValue);
-        }
-    }
 
     private Object parseCollection(Object currentFieldValue) {
         JSONArray array = new JSONArray();
