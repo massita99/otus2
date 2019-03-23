@@ -15,10 +15,16 @@ public class Serializer {
 
     public String toJson(Object serializedObject) {
 
-        return serializedObject != null ? parseFieldValue(serializedObject.getClass(), serializedObject).toString() : "null";
+        return serializedObject != null ? parseFieldValue(serializedObject).toString() : "null";
     }
 
-    private Object parseFieldValue(Class<?> convertedFieldType, Object convertedFieldValue) {
+    private Object parseFieldValue(Object convertedFieldValue) {
+
+        if (convertedFieldValue == null) {
+            return null;
+        }
+
+        Class<?> convertedFieldType = convertedFieldValue.getClass();
 
         if (ClassUtils.isPrimitiveOrWrapper(convertedFieldType)) {
             return convertedFieldValue;
@@ -31,9 +37,6 @@ public class Serializer {
 
         } else if (Collection.class.isAssignableFrom(convertedFieldType)) {
             return parseCollection(convertedFieldValue);
-
-        } else if (convertedFieldValue == null) {
-            return "null";
 
         } else {
             return parseObject(convertedFieldValue);
@@ -53,10 +56,9 @@ public class Serializer {
                 currentField.trySetAccessible();
             }
 
-            Class<?> currentFieldType = currentField.getType();
             Object currentFieldValue = currentField.get(serializedObject);
 
-            result.put(currentField.getName(), parseFieldValue(currentFieldType, currentFieldValue));
+            result.put(currentField.getName(), parseFieldValue(currentFieldValue));
 
         }
         return result;
@@ -68,7 +70,7 @@ public class Serializer {
         JSONArray array = new JSONArray();
         Collection collection = (Collection) currentFieldValue;
         for (Object collectionElement : collection) {
-            array.add(parseFieldValue(collectionElement.getClass(), collectionElement));
+            array.add(parseFieldValue(collectionElement));
         }
         return array;
     }
@@ -78,7 +80,7 @@ public class Serializer {
         int length = Array.getLength(currentFieldValue);
         for (int i = 0; i < length; i ++) {
             Object arrayElement = Array.get(currentFieldValue, i);
-            array.add(parseFieldValue(arrayElement.getClass(), arrayElement));
+            array.add(parseFieldValue(arrayElement));
         }
         return array;
     }

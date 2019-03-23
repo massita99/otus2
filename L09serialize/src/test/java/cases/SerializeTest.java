@@ -19,7 +19,7 @@ public class SerializeTest {
                 { new ChildIntField(), "{\"childInt\":5,\"intField\":0}" },
                 { new AllPrimitiveFields(), "{\"floatField\":1.1,\"longField\":100,\"doubleField\":5.5,\"charField\":c,\"booleanField\":true,\"byteField\":3,\"intField\":4,\"shortField\":1}" },
                 { new OneStringField(), "{\"stringField\":\"test\"}" },
-                { new ObjectField(), "{\"oneStringField\":{\"stringField\":\"test\"},\"intField\":\"null\"}" },
+                { new ObjectField(), "{\"oneStringField\":{\"stringField\":\"test\"},\"intField\":null}" },
                 { new ArrayField(), "{\"arrayField\":[1,2,3]}" },
                 { new CollectionField(), "{\"listOfStringField\":[\"one\",\"two\"]}" },
                 { new TransientField(), "{\"normalField\":0}" },
