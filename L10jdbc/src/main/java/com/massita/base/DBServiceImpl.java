@@ -1,12 +1,17 @@
 package com.massita.base;
 
+import com.massita.user.DataSet;
+import com.massita.user.DataSetDao;
+import com.massita.user.DataSetDaoImpl;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 import java.util.StringJoiner;
 
-public class DBServiceImpl implements DBService {
+public class DBServiceImpl<T extends DataSet> implements DBService<T> {
     private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS userdataset (\n" +
             "  id        BIGSERIAL NOT NULL PRIMARY KEY,\n" +
             "  name VARCHAR(255),\n" +
@@ -45,5 +50,17 @@ public class DBServiceImpl implements DBService {
         try (final Statement statement = connection.createStatement()) {
             statement.executeUpdate(DROP_TABLE_USER);
         }
+    }
+
+    @Override
+    public void save(T dataSet) throws SQLException {
+        DataSetDao<T> dataSetDao = new DataSetDaoImpl<>(connection);
+        dataSetDao.save(dataSet);
+    }
+
+    @Override
+    public Optional<T> readForClass(int id, Class<T> clazz) throws SQLException {
+        DataSetDao<T> dataSetDao = new DataSetDaoImpl<>(connection);
+        return dataSetDao.load(id, clazz);
     }
 }

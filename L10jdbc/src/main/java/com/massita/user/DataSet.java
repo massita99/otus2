@@ -3,7 +3,7 @@ package com.massita.user;
 import lombok.Getter;
 import lombok.Setter;
 
-abstract class DataSet {
+public abstract class DataSet {
 
     @Setter
     @Getter

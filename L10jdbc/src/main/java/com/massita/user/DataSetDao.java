@@ -3,7 +3,7 @@ package com.massita.user;
 import java.sql.SQLException;
 import java.util.Optional;
 
-interface DataSetDao<T extends DataSet> {
+public interface DataSetDao<T extends DataSet> {
 
     /**
      * Save persist object to DB

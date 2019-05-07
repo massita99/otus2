@@ -16,4 +16,10 @@ public class Executor {
             statement.executeUpdate(update);
         }
     }
+
+    public static void updatePrepared(PreparedStatement statement) throws SQLException {
+        try (statement) {
+            statement.executeUpdate();
+        }
+    }
 }

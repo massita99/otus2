@@ -5,7 +5,7 @@ import com.massita.util.ReflectionUtil;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ResultSetHelper {
+public class JdbcHelper {
 
     public static void loadResultSetIntoObject(ResultSet resultSet, Object object) {
 

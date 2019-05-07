@@ -1,11 +1,15 @@
 package com.massita.util;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class ReflectionUtil {
+
+    public static Map<Class, List<Field>> simpleCache = new HashMap<>();
 
     public static List<Field> getAllSerializableFields(Class<?> type) {
         List<Field> resultFields = new LinkedList<>();
@@ -29,9 +33,9 @@ public class ReflectionUtil {
         return resultFields;
     }
 
-    public static <T> void handleAllFields(Class<T> type, Consumer<Field> function) {
-        List<Field> fields = getAllSerializableFields(type);
+    public static <T> void handleAllFields(Class<T> type, Consumer<Field> fieldConsumer) {
+        List<Field> fields = simpleCache.computeIfAbsent(type, ReflectionUtil::getAllSerializableFields);
         fields.forEach(f -> f.setAccessible(true));
-        fields.forEach(function::accept);
+        fields.forEach(fieldConsumer::accept);
     }
 }
