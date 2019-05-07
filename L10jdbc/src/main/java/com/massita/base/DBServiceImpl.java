@@ -21,8 +21,12 @@ public class DBServiceImpl<T extends DataSet> implements DBService<T> {
 
     private final Connection connection;
 
+    private final DataSetDao<T> dataSetDao;
+
+
     public DBServiceImpl(Connection connection) {
         this.connection = connection;
+        this.dataSetDao = new DataSetDaoImpl<>(connection);
     }
 
     @Override
@@ -54,13 +58,11 @@ public class DBServiceImpl<T extends DataSet> implements DBService<T> {
 
     @Override
     public void save(T dataSet) throws SQLException {
-        DataSetDao<T> dataSetDao = new DataSetDaoImpl<>(connection);
         dataSetDao.save(dataSet);
     }
 
     @Override
     public Optional<T> readForClass(int id, Class<T> clazz) throws SQLException {
-        DataSetDao<T> dataSetDao = new DataSetDaoImpl<>(connection);
         return dataSetDao.load(id, clazz);
     }
 }
