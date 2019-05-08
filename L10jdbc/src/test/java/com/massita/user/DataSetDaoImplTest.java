@@ -2,6 +2,8 @@ package com.massita.user;
 
 import com.massita.base.DBService;
 import com.massita.base.DBServiceImpl;
+import com.massita.base.DDLService;
+import com.massita.base.DDLServiceImpl;
 import com.massita.dbcommon.ConnectionHelper;
 import org.junit.After;
 import org.junit.Assert;
@@ -16,13 +18,15 @@ import java.util.Optional;
 public class DataSetDaoImplTest {
 
     DBService dbService;
+    DDLService ddlService;
     Connection connection;
 
     @Before
     public void init() throws SQLException {
         connection = ConnectionHelper.getConnection();
         dbService = new DBServiceImpl(connection);
-        dbService.prepareTables();
+        ddlService = new DDLServiceImpl(connection);
+        ddlService.prepareTables();
         try (final Statement statement = connection.createStatement()) {
             statement.execute("INSERT INTO userdataset (name, age) VALUES ('massita', 30 );");
         }
@@ -31,7 +35,7 @@ public class DataSetDaoImplTest {
 
     @After
     public void afterTest() throws SQLException {
-        dbService.deleteTables();
+        ddlService.deleteTables();
     }
 
     @Test
