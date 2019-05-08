@@ -7,5 +7,5 @@ public abstract class DataSet {
 
     @Setter
     @Getter
-    private transient int id;
+    private long id;
 }

@@ -30,7 +30,7 @@ public class DataSetDaoImpl<T extends DataSet> implements DataSetDao<T> {
     private final Map<Class<?>, PreparedStatement> selectStatementsCache = new HashMap<>();
 
     @Override
-    public void save(T user) throws SQLException {
+    public void save(T user) {
         final PreparedStatement statement = saveStatementsCache.computeIfAbsent(user.getClass(), this::getPreparedInsertQuery);
 
         List<Object> fieldsValues = new LinkedList<>();
@@ -38,7 +38,11 @@ public class DataSetDaoImpl<T extends DataSet> implements DataSetDao<T> {
         // add all object field values to fieldsValues list
         ReflectionUtil.handleAllFields(user.getClass(), field -> {
             try {
-                fieldsValues.add(field.get(user));
+                if (field.getName().equals("id")) {
+                    fieldsValues.add(null);
+                } else{
+                    fieldsValues.add(field.get(user));
+                }
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Unable to read field: " + field.getName(), e);
             }
@@ -69,7 +73,8 @@ public class DataSetDaoImpl<T extends DataSet> implements DataSetDao<T> {
     }
 
     @Override
-    public Optional<T> load(int id, Class<T> clazz) throws SQLException {
+    @SneakyThrows
+    public Optional<T> load(int id, Class<T> clazz) {
         final PreparedStatement statement = selectStatementsCache.computeIfAbsent(clazz, this::getPreparedSelectQuery);
         statement.setInt(1, id);
         return Optional.ofNullable(Executor.queryPreparedForClass(statement, this::extract, clazz));

@@ -11,7 +11,7 @@ public interface DataSetDao<T extends DataSet> {
      * @throws SQLException
      */
 
-    void save(T user) throws SQLException;
+    void save(T user);
 
     /**
      * Load object to POJO from DB
@@ -20,5 +20,5 @@ public interface DataSetDao<T extends DataSet> {
      * @return object of requested class
      * @throws SQLException
      */
-    Optional<T> load(int id, Class<T> clazz) throws SQLException;
+    Optional<T> load(int id, Class<T> clazz);
 }
