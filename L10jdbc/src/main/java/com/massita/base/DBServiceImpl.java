@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.StringJoiner;
 
-public class DBServiceImpl<T extends DataSet> implements DBService<T> {
+public class DBServiceImpl<T extends DataSet> implements DBService<T>, DDLService {
     private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS userdataset (\n" +
             "  id        BIGSERIAL NOT NULL PRIMARY KEY,\n" +
             "  name VARCHAR(255),\n" +
