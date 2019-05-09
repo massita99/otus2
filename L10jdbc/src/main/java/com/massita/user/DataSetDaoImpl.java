@@ -74,9 +74,9 @@ public class DataSetDaoImpl<T extends DataSet> implements DataSetDao<T> {
 
     @Override
     @SneakyThrows
-    public Optional<T> load(int id, Class<T> clazz) {
+    public Optional<T> load(long id, Class<T> clazz) {
         final PreparedStatement statement = selectStatementsCache.computeIfAbsent(clazz, this::getPreparedSelectQuery);
-        statement.setInt(1, id);
+        statement.setLong(1, id);
         return Optional.ofNullable(Executor.queryPreparedForClass(statement, this::extract, clazz));
     }
 

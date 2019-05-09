@@ -20,5 +20,5 @@ public interface DataSetDao<T extends DataSet> {
      * @return object of requested class
      * @throws SQLException
      */
-    Optional<T> load(int id, Class<T> clazz);
+    Optional<T> load(long id, Class<T> clazz);
 }

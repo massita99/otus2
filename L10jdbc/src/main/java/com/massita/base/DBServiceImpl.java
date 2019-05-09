@@ -5,7 +5,6 @@ import com.massita.user.DataSetDao;
 import com.massita.user.DataSetDaoImpl;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class DBServiceImpl<T extends DataSet> implements DBService<T> {
@@ -21,12 +20,12 @@ public class DBServiceImpl<T extends DataSet> implements DBService<T> {
     }
 
     @Override
-    public void save(T dataSet) throws SQLException {
+    public void save(T dataSet) {
         dataSetDao.save(dataSet);
     }
 
     @Override
-    public Optional<T> readForClass(int id, Class<T> clazz) throws SQLException {
+    public Optional<T> readForClass(long id, Class<T> clazz) {
         return dataSetDao.load(id, clazz);
     }
 }

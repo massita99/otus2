@@ -13,7 +13,22 @@ public class DDLServiceImpl implements DDLService {
             "  name VARCHAR(255),\n" +
             "  age       INTEGER\n" +
             ");";
+
+    private static final String CREATE_TABLE_PHONE = "CREATE TABLE IF NOT EXISTS phonedataset (\n" +
+            "  id        BIGSERIAL NOT NULL PRIMARY KEY,\n" +
+            "  number VARCHAR(255)\n" +
+            ");";
+
+    private static final String CREATE_TABLE_ADDRESS = "CREATE TABLE IF NOT EXISTS addressdataset (\n" +
+            "  id        BIGSERIAL NOT NULL PRIMARY KEY,\n" +
+            "  street VARCHAR(255)\n" +
+            ");";
+
     private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS userdataset;";
+
+    private static final String DROP_TABLE_PHONE = "DROP TABLE IF EXISTS phonedataset;";
+
+    private static final String DROP_TABLE_ADDRESS = "DROP TABLE IF EXISTS addressdataset;";
 
     private final Connection connection;
 
@@ -38,6 +53,8 @@ public class DDLServiceImpl implements DDLService {
     public void prepareTables() throws SQLException {
         try (final Statement statement = connection.createStatement()) {
             statement.executeUpdate(CREATE_TABLE_USER);
+            statement.executeUpdate(CREATE_TABLE_PHONE);
+            statement.executeUpdate(CREATE_TABLE_ADDRESS);
         }
     }
 
@@ -45,6 +62,8 @@ public class DDLServiceImpl implements DDLService {
     public void deleteTables() throws SQLException {
         try (final Statement statement = connection.createStatement()) {
             statement.executeUpdate(DROP_TABLE_USER);
+            statement.executeUpdate(DROP_TABLE_PHONE);
+            statement.executeUpdate(DROP_TABLE_ADDRESS);
         }
     }
 }
