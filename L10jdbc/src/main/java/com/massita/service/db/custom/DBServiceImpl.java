@@ -1,8 +1,9 @@
-package com.massita.base;
+package com.massita.service.db.custom;
 
-import com.massita.user.DataSet;
-import com.massita.user.DataSetDao;
-import com.massita.user.DataSetDaoImpl;
+import com.massita.model.DataSet;
+import com.massita.service.db.DBService;
+import com.massita.service.db.dao.DataSetDao;
+import com.massita.service.db.dao.DataSetDaoImpl;
 
 import java.sql.Connection;
 import java.util.Optional;

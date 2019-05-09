@@ -1,10 +1,11 @@
-package com.massita.user;
+package com.massita.service.db.dao;
 
-import com.massita.base.DBService;
-import com.massita.base.DBServiceImpl;
-import com.massita.base.DDLService;
-import com.massita.base.DDLServiceImpl;
-import com.massita.dbcommon.ConnectionHelper;
+import com.massita.service.db.DBService;
+import com.massita.service.db.custom.DBServiceImpl;
+import com.massita.service.db.DDLService;
+import com.massita.service.db.DDLServiceImpl;
+import com.massita.service.db.util.dbcommon.ConnectionHelper;
+import com.massita.model.UserDataSet;
 import org.junit.*;
 
 import java.sql.Connection;

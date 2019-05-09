@@ -1,4 +1,4 @@
-package com.massita.user;
+package com.massita.model;
 
 
 import lombok.*;

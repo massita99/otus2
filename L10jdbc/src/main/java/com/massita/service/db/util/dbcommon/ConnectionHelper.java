@@ -1,4 +1,4 @@
-package com.massita.dbcommon;
+package com.massita.service.db.util.dbcommon;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

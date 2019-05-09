@@ -1,18 +1,20 @@
-package com.massita.base;
+package com.massita.service.db;
 
-import com.massita.dbcommon.ConnectionHelper;
-import com.massita.user.AddressDataSet;
-import com.massita.user.PhoneDataSet;
-import com.massita.user.UserDataSet;
+import com.massita.model.AddressDataSet;
+import com.massita.model.PhoneDataSet;
+import com.massita.model.UserDataSet;
+import com.massita.service.db.hibernate.DBServiceHibernateImpl;
+import com.massita.service.db.util.dbcommon.ConnectionHelper;
+import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,7 +27,13 @@ public class DBServiceHibernateImplTest {
     @Before
     public void init() throws SQLException {
         connection = ConnectionHelper.getConnection();
-        dbService = new DBServiceHibernateImpl<>(List.of(UserDataSet.class, AddressDataSet.class, PhoneDataSet.class));
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        Configuration configuration = new Configuration()
+                .configure(new File(classLoader.getResource("service/db/hibernate/hibernate.cfg.xml").getFile()))
+                .addAnnotatedClass(UserDataSet.class)
+                .addAnnotatedClass(PhoneDataSet.class)
+                .addAnnotatedClass(AddressDataSet.class);
+        dbService = new DBServiceHibernateImpl<>(configuration);
         ddlService = new DDLServiceImpl(connection);
         ddlService.prepareTables();
         try (final Statement statement = connection.createStatement()) {

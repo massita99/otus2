@@ -1,6 +1,6 @@
-package com.massita.base;
+package com.massita.service.db;
 
-import com.massita.dbcommon.ConnectionHelper;
+import com.massita.service.db.util.dbcommon.ConnectionHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,10 +1,11 @@
-package com.massita.user;
+package com.massita.service.db.dao;
 
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import com.massita.executors.Executor;
+import com.massita.service.db.executors.Executor;
+import com.massita.model.DataSet;
 import com.massita.util.ReflectionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,7 +18,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.massita.executors.JdbcHelper.loadResultSetIntoObject;
+import static com.massita.service.db.executors.JdbcHelper.loadResultSetIntoObject;
 
 @RequiredArgsConstructor
 public class DataSetDaoImpl<T extends DataSet> implements DataSetDao<T> {

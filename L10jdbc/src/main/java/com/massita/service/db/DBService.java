@@ -1,6 +1,6 @@
-package com.massita.base;
+package com.massita.service.db;
 
-import com.massita.user.DataSet;
+import com.massita.model.DataSet;
 
 import java.util.Optional;
 

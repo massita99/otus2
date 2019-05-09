@@ -1,4 +1,4 @@
-package com.massita.executors;
+package com.massita.service.db.executors;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

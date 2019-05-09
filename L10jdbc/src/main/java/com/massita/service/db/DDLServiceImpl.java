@@ -1,4 +1,4 @@
-package com.massita.base;
+package com.massita.service.db;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
