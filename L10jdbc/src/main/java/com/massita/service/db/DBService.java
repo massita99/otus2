@@ -9,4 +9,6 @@ public interface DBService<T extends DataSet> {
     void save(T dataSet);
 
     Optional<T> readForClass(long id, Class<T> clazz);
+
+    long count(Class<T> clazz);
 }

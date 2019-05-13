@@ -70,13 +70,13 @@ public class DBServiceHibernateImplTest {
 
         UserDataSet testUser = new UserDataSet("tony", 40);
         AddressDataSet testAddress = new AddressDataSet("Sretenka");
-        testUser.setStreet(testAddress);
+        testUser.setAddress(testAddress);
         dbService.save(testUser);
 
         Optional<UserDataSet> user = dbService.readForClass(2, UserDataSet.class);
 
         Assert.assertEquals(user.get().getName(), testUser.getName());
-        Assert.assertEquals(user.get().getStreet(), testAddress);
+        Assert.assertEquals(user.get().getAddress(), testAddress);
 
     }
 
@@ -92,5 +92,14 @@ public class DBServiceHibernateImplTest {
         Assert.assertEquals(user.get().getName(), testUser.getName());
         Assert.assertEquals(user.get().getPhones().size(), 1);
 
+    }
+
+    @Test
+    public void count() {
+        Assert.assertEquals(dbService.count(UserDataSet.class), 1);
+        //add one user
+        UserDataSet testUser = new UserDataSet("tony", 40);
+        dbService.save(testUser);
+        Assert.assertEquals(dbService.count(UserDataSet.class), 2);
     }
 }

@@ -1,9 +1,9 @@
 package com.massita.service.db.dao;
 
 import com.massita.model.DataSet;
+import org.hibernate.Criteria;
 import org.hibernate.Session;
-
-import java.util.Optional;
+import org.hibernate.criterion.Projections;
 
 public class DataSetDaoHibernateImpl<T extends DataSet> implements DataSetDao<T> {
 
@@ -20,7 +20,15 @@ public class DataSetDaoHibernateImpl<T extends DataSet> implements DataSetDao<T>
     }
 
     @Override
-    public Optional<T> load(long id, Class<T> clazz) {
-        return Optional.ofNullable(session.load(clazz, id));
+    public T load(long id, Class<T> clazz) {
+        T dataSet = session.load(clazz, id);
+        return dataSet;
+    }
+
+    @Override
+    public long count(Class<T> clazz) {
+        Criteria crit = session.createCriteria(clazz);
+        crit.setProjection(Projections.rowCount());
+        return (Long)crit.uniqueResult();
     }
 }

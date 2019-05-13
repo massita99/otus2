@@ -27,6 +27,11 @@ public class DBServiceImpl<T extends DataSet> implements DBService<T> {
 
     @Override
     public Optional<T> readForClass(long id, Class<T> clazz) {
-        return dataSetDao.load(id, clazz);
+        return Optional.ofNullable(dataSetDao.load(id, clazz));
+    }
+
+    @Override
+    public long count(Class<T> clazz) {
+        throw new UnsupportedOperationException();
     }
 }

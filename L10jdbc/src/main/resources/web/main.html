@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" data-semver="2.1.1" data-require="jquery@*"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js" data-semver="3.1.1" data-require="bootstrap@3.1.1"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-mockjax/1.5.3/jquery.mockjax.min.js"></script>
+    <script src="script.js"></script>
+    <script src="jquery-form-serializer.js"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" data-semver="3.1.1" data-require="bootstrap-css@3.1.1"/>
+</head>
+
+<body>
+<h1>Basic Admin Page</h1>
+<div class="container">
+    <div class="well">
+        <h2>Save User</h2>
+        <form id="saveForm" class="form-vertical" role="form" autocomplete="off" method="POST" action="/user">
+            <fieldset>
+                <!--                <div class="col-xs-12">
+                                    <button class="btn btn-default pull-right" id="defaultData">Fill default data</button>
+                                </div>-->
+                <div class="form-group col-xs-12 col-sm-6">
+                    <label for="name" class="control-label">Name</label>
+                    <input type="text" class="form-control" name="name" id="name" placeholder="Enter Name">
+                </div>
+                <div class="form-group col-xs-12 col-sm-6">
+                    <label for="age" class="control-label">Age</label>
+                    <input type="text" class="form-control" name="age" id="age" placeholder="Enter Age">
+                </div>
+
+                <div class="form-group col-xs-12 col-sm-12">
+                    <label for="address" class="control-label">Address</label>
+                    <input type="text" class="form-control" name="address[street]" id="address_street" placeholder="Your street">
+                </div>
+                <div class="col-xs-12">
+                    <label class="control-label" for="phones">Phone:</label>
+                    <div class="control-group" id="phones">
+                        <div class="controls">
+                            <div class="entry input-group form-group">
+                                <span class="input-group-addon">#</span>
+                                <input class="form-control" name="phones[0][number]" placeholder="add phone" type="text">
+                                <span class="input-group-btn">
+                    <button class="btn btn-success btn-add" type="button">
+                      <span class="glyphicon glyphicon-plus"></span>
+                  </button>
+                  </span>
+                            </div>
+                        </div>
+                    </div>
+                    <small>Press <span class="glyphicon glyphicon-plus gs"></span> to add another phone :)</small>
+                </div>
+                <div class="pull-right">
+                    <br>
+                    <div class="btn-group col-xs-12">
+                        <button type="button" class="btn btn-default" id="saveUser">Save</button>
+
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <div class="container">
+        <div class="well col-xs-12">
+            <div class="control-label col-xs-12">
+                <label>Result:</label>
+            </div>
+            <div class="col-xs-12">
+                <textarea class="form-control" readonly id="results">Waiting to send request</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="well">
+        <h2>Load User</h2>
+        <form id="loadForm" class="form-vertical" role="form" autocomplete="off" method="GET" action="/user">
+            <fieldset>
+                <div class="form-group col-xs-12">
+                    <label for="id" class="control-label">Id</label>
+                    <input type="text" class="form-control" name="id" placeholder="id">
+                </div>
+                <div class="form-group col-xs-12 col-sm-6">
+                    <label for="name" class="control-label">Name</label>
+                    <input type="text" readonly class="form-control" name="name" placeholder="Name">
+                </div>
+                <div class="form-group col-xs-12 col-sm-6">
+                    <label for="age" class="control-label">Age</label>
+                    <input type="text" readonly class="form-control" name="age" placeholder="Age">
+                </div>
+
+                <div class="form-group col-xs-12 col-sm-12">
+                    <label for="address" class="control-label">Address</label>
+                    <input type="text" readonly class="form-control" name="address[street]" placeholder="Your street">
+                </div>
+
+                <div id="load-phones" class="form-group col-xs-12 col-sm-12">
+                    <label for="phone" class="control-label">Phones</label>
+                    <input type="text" readonly class="form-control" name="phone[0][number]" placeholder="Your Number">
+                </div>
+                <div class="pull-right">
+                    <br>
+                    <div class="btn-group col-xs-12">
+                        <button type="button" class="btn btn-default" id="loadUser">Load</button>
+
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <div class="well">
+        <h2>Stats</h2>
+        <form id="statForm" class="form-vertical" role="form" autocomplete="off" method="GET" action="/stat">
+            <fieldset>
+                <div class="form-group col-xs-12 col-sm-6">
+                    <label for="count" class="control-label">User count</label>
+                    <input type="text" readonly class="form-control" name="count" placeholder="count">
+                </div>
+                <div class="pull-right">
+                    <br>
+                    <div class="btn-group col-xs-12 col-sm-6">
+                        <button type="button" class="btn btn-default" id="getStat">Get User Count</button>
+
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+</body>
+
+</html>

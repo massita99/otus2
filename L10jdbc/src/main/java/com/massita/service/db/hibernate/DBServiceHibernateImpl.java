@@ -4,10 +4,7 @@ import com.massita.model.DataSet;
 import com.massita.service.db.DBService;
 import com.massita.service.db.dao.DataSetDao;
 import com.massita.service.db.dao.DataSetDaoHibernateImpl;
-import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
@@ -45,9 +42,21 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T> {
     public Optional<T> readForClass(long id, Class<T> clazz) {
         return runInSession(session -> {
             DataSetDao<T> dao = new DataSetDaoHibernateImpl<>(session);
-            Optional<T> object = dao.load(id, clazz);
-            Hibernate.initialize(object);
-            return object;
+            T object = dao.load(id, clazz);
+            try {
+                Hibernate.initialize(object);
+            } catch (ObjectNotFoundException e) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(object);
+        });
+    }
+
+    @Override
+    public long count(Class<T> clazz) {
+        return runInSession(session -> {
+            DataSetDao<T> dao = new DataSetDaoHibernateImpl<>(session);
+            return dao.count(clazz);
         });
     }
 

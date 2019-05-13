@@ -23,7 +23,7 @@ public class UserDataSet extends DataSet {
 
     @Setter
     @OneToOne(cascade = CascadeType.ALL)
-    private AddressDataSet street;
+    private AddressDataSet address;
 
     @Setter
     @OneToMany(cascade = CascadeType.ALL)
