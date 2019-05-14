@@ -1,10 +1,9 @@
 package com.massita.web.servlet;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.massita.model.UserDataSet;
+import com.massita.service.GsonService;
 import com.massita.service.db.DBService;
-import com.massita.service.db.hibernate.HibernateProxyTypeAdapter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.massita.web.servlet.ServletHelper.getJsonWriter;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
 
@@ -33,44 +33,70 @@ public class UserDataSetServlet extends HttpServlet {
 
     public UserDataSetServlet(DBService<UserDataSet> dbService) {
         this.dbService = dbService;
-        GsonBuilder b = new GsonBuilder();
-        b.registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY);
-        this.gson = b.create();
+        this.gson = GsonService.getInstance().getGson();
     }
 
 
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        Long userId;
-        String requestedId = req.getParameter("id");
-        resp.setContentType(APPLICATION_JSON);
-        PrintWriter out = resp.getWriter();
 
+        PrintWriter out = getJsonWriter(resp);
+
+        Optional<Long> userId = getLongParameter("id", req, resp, out);
+        if (userId.isEmpty()) {
+            return;
+        }
+
+        Optional<UserDataSet> user = dbService.readForClass(userId.get(), UserDataSet.class);
+
+        if (user.isEmpty()) {
+
+            resp.setStatus(NOT_FOUND.getCode());
+            out.print(gson.toJson(Map.entry("message", String.format("User with id=%s not exist", userId.get()))));
+            logger.warn("User with id {} does not exist", userId.get());
+        } else {
+            out.print(gson.toJson(user.get()));
+            resp.setStatus(SC_OK);
+        }
+
+    }
+
+    private Optional<Long> getLongParameter(String parameterName, HttpServletRequest req, HttpServletResponse resp, PrintWriter out) {
+        Long userId;
+        String requestedId = req.getParameter(parameterName);
         try {
             userId = Long.parseLong(requestedId);
         } catch (NumberFormatException e) {
             resp.setStatus(NOT_FOUND.getCode());
-            out.print(gson.toJson(Map.entry("message", String.format("Id %s should be numeric", requestedId))));
-            logger.warn("Id {} should be numeric", requestedId);
-            return;
+            out.print(gson.toJson(Map.entry("message", String.format("%s %s should be numeric", parameterName, requestedId))));
+            logger.warn("{} {} should be numeric", parameterName, requestedId);
+            return Optional.empty();
         }
-        Optional<UserDataSet> user = dbService.readForClass(userId, UserDataSet.class);
-
-        if (user.isEmpty()) {
-            resp.setStatus(NOT_FOUND.getCode());
-            out.print(gson.toJson(Map.entry("message", String.format("User with id=%s not exist", userId))));
-            logger.warn("User with id {} does not exist", userId);
-            return;
-        }
-
-        out.print(gson.toJson(user.get()));
-        resp.setStatus(SC_OK);
-
+        return Optional.of(userId);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String serializedUser = getRequestBody(req, resp);
+
+        if (!serializedUser.isEmpty()) {
+
+            UserDataSet user = gson.fromJson(serializedUser, UserDataSet.class);
+
+            dbService.save(user);
+
+            PrintWriter out = getJsonWriter(resp);
+            out.print(gson.toJson(Map.entry("message", "User was saved")));
+            resp.setStatus(SC_OK);
+        } else {
+            resp.setStatus(SC_BAD_REQUEST);
+            logger.error("Error while saving {}", serializedUser);
+        }
+
+    }
+
+    private String getRequestBody(HttpServletRequest req, HttpServletResponse resp) {
         StringBuilder jb = new StringBuilder();
         String line;
         try {
@@ -83,17 +109,6 @@ public class UserDataSetServlet extends HttpServlet {
             logger.error("Error while reading request");
         }
 
-        String serializedUser = jb.toString();
-        if (!serializedUser.isEmpty()) {
-            UserDataSet user = gson.fromJson(serializedUser, UserDataSet.class);
-            dbService.save(user);
-            PrintWriter out = resp.getWriter();
-            out.print(gson.toJson(Map.entry("message", "User was saved")));
-            resp.setStatus(SC_OK);
-        } else {
-            resp.setStatus(SC_BAD_REQUEST);
-            logger.error("Error while saving {}", serializedUser);
-        }
-
+        return jb.toString();
     }
 }

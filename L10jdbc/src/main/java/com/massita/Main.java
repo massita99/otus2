@@ -1,76 +1,13 @@
 package com.massita;
 
-import com.massita.model.AddressDataSet;
-import com.massita.model.PhoneDataSet;
-import com.massita.model.UserDataSet;
-import com.massita.service.db.DBService;
-import com.massita.service.db.DDLService;
-import com.massita.service.db.DDLServiceImpl;
-import com.massita.service.db.hibernate.DBServiceHibernateImpl;
-import com.massita.service.db.util.dbcommon.ConnectionHelper;
-import com.massita.web.servlet.UserDataSetServlet;
-import com.massita.web.servlet.UserDataSetStatsServlet;
-import lombok.SneakyThrows;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.hibernate.cfg.Configuration;
-
-import java.io.File;
-import java.sql.Connection;
+import com.massita.web.servlet.WebServer;
 
 public class Main {
 
-    private final static int PORT = 8080;
-
     public static void main(String[] args) throws Exception {
-        new Main().start();
+        new WebServer().start();
     }
 
-    private void start() throws Exception {
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-
-        Server server = new Server(PORT);
-
-        //Add custom servlets
-        context.addServlet(new ServletHolder(new UserDataSetServlet(getDbService())), "/user");
-        context.addServlet(new ServletHolder(new UserDataSetStatsServlet(getDbService())), "/stat");
-
-        ResourceHandler resource_handler = new ResourceHandler();
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-
-        // Configure the ResourceHandler. Setting the resource base indicates where the files should be served out of.
-        resource_handler.setDirectoriesListed(true);
-        resource_handler.setWelcomeFiles(new String[]{"main.html"});
-        resource_handler.setResourceBase(classLoader.getResource("web").toString());
-
-        // Add the ResourceHandler to the server.
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { resource_handler, context });
-        server.setHandler(handlers);
-
-        // Start things up! By using the server.join() the server thread will join with the current thread.
-        server.start();
-        server.join();
-    }
-
-    @SneakyThrows
-    private DBService<UserDataSet> getDbService() {
-        Connection connection = ConnectionHelper.getConnection();
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        Configuration configuration = new Configuration()
-                .configure(new File(classLoader.getResource("service/db/hibernate/hibernate.cfg.xml").getFile()))
-                .addAnnotatedClass(UserDataSet.class)
-                .addAnnotatedClass(PhoneDataSet.class)
-                .addAnnotatedClass(AddressDataSet.class);
-        DBService dbService = new DBServiceHibernateImpl<>(configuration);
-        DDLService ddlService = new DDLServiceImpl(connection);
-        ddlService.prepareTables();
-        return dbService;
-    }
 
 
 }
