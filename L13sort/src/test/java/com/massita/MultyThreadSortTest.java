@@ -49,7 +49,7 @@ public class MultyThreadSortTest {
         Random random = new Random();
 
         List<Integer> input = new ArrayList<>();
-        IntStream.rangeClosed(1, 100000).map(el -> random.nextInt()).distinct().forEach(input::add);
+        IntStream.rangeClosed(1, 5000000).map(el -> random.nextInt()).distinct().forEach(input::add);
 
         //Just Get rough time of multisort
         long start = System.currentTimeMillis();

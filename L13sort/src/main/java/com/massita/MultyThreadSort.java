@@ -1,18 +1,19 @@
 package com.massita;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 public class MultyThreadSort {
 
+
+
     /**
-     * Make MultiThread Sort of unique element
+     * Make MultiThread Sort of element
      *
-     * @param inputList list of unique element
+     * @param inputList list of element
      * @param <T> type of elements
      * @return sorted list in Natural order
      * @throws ExecutionException
@@ -21,22 +22,29 @@ public class MultyThreadSort {
     public static <T extends Comparable<? super T>> List<T> multiThreadSort(List<T> inputList) throws ExecutionException, InterruptedException {
 
         //Divide input array on 4 parts and sort each in thread
-        CompletableFuture<List<T>> threadOneSort = CompletableFuture.supplyAsync(() -> oneThreadSort(inputList.subList(0, inputList.size() / 4 + 1)));
-        CompletableFuture<List<T>> threadSecondSort = CompletableFuture.supplyAsync(() -> oneThreadSort(inputList.subList(inputList.size() / 4 + 1, inputList.size() / 2 + 1)));
-        CompletableFuture<List<T>> threadThirdSort = CompletableFuture.supplyAsync(() -> oneThreadSort(inputList.subList(inputList.size() / 2 + 1, 3 * inputList.size() / 4 + 1)));
-        CompletableFuture<List<T>> threadFourthSort = CompletableFuture.supplyAsync(() -> oneThreadSort(inputList.subList(3 * inputList.size() / 4 + 1, inputList.size())));
+
+        //Improvement 1: divide input list by one scan of input list
+        List<List<T>> subArraysForSort = divideList(inputList, 4);
+
+        //Improvement 2: Use ThreadPool with fixed necessary thread count
+        Executor executor = Executors.newFixedThreadPool(4);
+
+        CompletableFuture<List<T>> threadOneSort = CompletableFuture.supplyAsync(() -> oneThreadSort(subArraysForSort.get(0)), executor);
+        CompletableFuture<List<T>> threadSecondSort = CompletableFuture.supplyAsync(() -> oneThreadSort(subArraysForSort.get(1)), executor);
+        CompletableFuture<List<T>> threadThirdSort = CompletableFuture.supplyAsync(() -> oneThreadSort(subArraysForSort.get(2)), executor);
+        CompletableFuture<List<T>> threadFourthSort = CompletableFuture.supplyAsync(() -> oneThreadSort(subArraysForSort.get(3)), executor);
 
         //Merge sorted arrays
-        CompletableFuture<List<T>> firstHalfSort = threadOneSort.thenCombineAsync(threadSecondSort, MultyThreadSort::oneThreadMergeSort);
-        CompletableFuture<List<T>> secondHalfSort = threadThirdSort.thenCombineAsync(threadFourthSort, MultyThreadSort::oneThreadMergeSort);
+        CompletableFuture<List<T>> firstHalfSort = threadOneSort.thenCombineAsync(threadSecondSort, MultyThreadSort::oneThreadMergeSort, executor);
+        CompletableFuture<List<T>> secondHalfSort = threadThirdSort.thenCombineAsync(threadFourthSort, MultyThreadSort::oneThreadMergeSort, executor);
 
-        CompletableFuture<List<T>> result = firstHalfSort.thenCombineAsync(secondHalfSort, MultyThreadSort::oneThreadMergeSort);
+        CompletableFuture<List<T>> result = firstHalfSort.thenCombineAsync(secondHalfSort, MultyThreadSort::oneThreadMergeSort, executor);
 
         return result.get();
     }
 
     /**
-     * Make MultiThread Sort of unique element
+     * Make MultiThread Sort of element
      *
      * @param inputList list of unique element
      * @param <T> type of elements
@@ -48,15 +56,41 @@ public class MultyThreadSort {
         return new ForkJoinPool().invoke(task);
     }
 
+    private static <T extends Comparable<? super T>> List<List<T>> divideList(List<T> inputList, int numOfPart) {
+        //Create numOfPart emptyLists
+        int eachSubListSize = inputList.size()/numOfPart;
+        List<List<T>> result = new ArrayList<>(numOfPart);
+        IntStream.range(0, numOfPart)
+                .forEach((el) -> result.add(new ArrayList<>(eachSubListSize + 1)));
+
+        int curSubListSize = 0;
+        int curSubListNum = 0;
+
+        //Fill created List with elements from initial
+        for (T el : inputList) {
+            if (curSubListSize > eachSubListSize) {
+                curSubListSize = 0;
+                curSubListNum++;
+            }
+            result.get(curSubListNum).add(el);
+            curSubListSize++;
+        }
+
+        return result;
+    }
+
     static <T extends Comparable<? super T>> List<T> oneThreadSort(List<T> inputList) {
 
-        TreeSet<T> sortedSet = new TreeSet<>(inputList);
+        //Improvement 4: use standard sort algoritm
+        inputList.sort(Comparator.naturalOrder());
 
-        return new ArrayList<>(sortedSet);
+        return inputList;
     }
 
     static <T extends Comparable<? super T>> List<T> oneThreadMergeSort(List<T> firstList, List<T> secondList) {
-        List<T> result = new ArrayList<>();
+
+        //Improvement 3: set required array size during creation to prevent copy
+        List<T> result = new ArrayList<>(firstList.size() + secondList.size());
         for (int i = 0, j = 0; i < firstList.size() || j < secondList.size(); ) {
             if (i == firstList.size()) {
                 result.add(secondList.get(j++));
