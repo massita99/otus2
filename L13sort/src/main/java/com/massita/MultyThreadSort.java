@@ -23,7 +23,7 @@ public class MultyThreadSort {
 
         //Divide input array on 4 parts and sort each in thread
 
-        //Improvement 1: divide input list by one scan of input list
+        //Improvement 1: divide input list by create view(for ArrayList)
         List<List<T>> subArraysForSort = divideList(inputList, 4);
 
         //Improvement 2: Use ThreadPool with fixed necessary thread count
@@ -57,24 +57,12 @@ public class MultyThreadSort {
     }
 
     private static <T extends Comparable<? super T>> List<List<T>> divideList(List<T> inputList, int numOfPart) {
-        //Create numOfPart emptyLists
-        int eachSubListSize = inputList.size()/numOfPart;
+
         List<List<T>> result = new ArrayList<>(numOfPart);
+
+        //Fill each part with elements: for ArrayList it will be view, for LinkedList copy
         IntStream.range(0, numOfPart)
-                .forEach((el) -> result.add(new ArrayList<>(eachSubListSize + 1)));
-
-        int curSubListSize = 0;
-        int curSubListNum = 0;
-
-        //Fill created List with elements from initial
-        for (T el : inputList) {
-            if (curSubListSize > eachSubListSize) {
-                curSubListSize = 0;
-                curSubListNum++;
-            }
-            result.get(curSubListNum).add(el);
-            curSubListSize++;
-        }
+                .forEach((el) -> result.add(inputList.subList(el * inputList.size()/numOfPart, (el + 1)  * inputList.size() / numOfPart)));
 
         return result;
     }
