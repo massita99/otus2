@@ -8,7 +8,7 @@ public class Main {
         MemoryWeighter weighter = new MemoryWeighter(10_000_000);
         ObjectFactory<String, ArrayList> stringFactory = new ObjectFactory<>(String.class, ArrayList.class);
         System.out.println("String size = " + weighter.weightObject(stringFactory));
-        System.out.println("String size by Instrumentation= " + weighter.weightObjectByInstrumentation(stringFactory));
+        //System.out.println("String size by Instrumentation= " + weighter.weightObjectByInstrumentation(stringFactory));
         for (int i = 0; i < 5; i++) {
             System.out.println("ArrayList of " + i + " Strings size = " + weighter.weightCollection(stringFactory, i));
         }
