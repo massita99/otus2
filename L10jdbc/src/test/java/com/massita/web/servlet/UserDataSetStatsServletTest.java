@@ -79,6 +79,6 @@ public class UserDataSetStatsServletTest {
 
     private void sendServiceAnswer(Message message, ArgumentCaptor<MessageListener> captor) {
         verify(messageService).subscribe(any(), captor.capture());
-        captor.getValue().onMessage(new ObjectMessage(null, null, 5L));
+        captor.getValue().onMessage(message);
     }
 }

@@ -52,6 +52,7 @@ public class DbServiceWithMessageFtsTest {
         messageService = new MessageService();
         messageService.start();
         dbServiceAddress = new Address("DB");
+        //((DBServiceHibernateImpl)dbService).setMessageService(messageService);
         messageService.subscribe(dbServiceAddress, (MessageListener) dbService);
 
     }
@@ -108,7 +109,7 @@ public class DbServiceWithMessageFtsTest {
                 testDataSet, UserDataSet.class);
         messageService.sendMessage(saveMessage);
         //Just to be sure that message delivered
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(2, dbService.count(UserDataSet.class));
 
     }

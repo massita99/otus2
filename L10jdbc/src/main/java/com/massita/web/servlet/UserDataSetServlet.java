@@ -3,11 +3,16 @@ package com.massita.web.servlet;
 import com.google.gson.Gson;
 import com.massita.model.UserDataSet;
 import com.massita.service.GsonService;
-import com.massita.service.db.DBService;
-import lombok.SneakyThrows;
+import com.massita.service.messaging.MessageListener;
+import com.massita.service.messaging.MessageService;
+import com.massita.service.messaging.message.Address;
+import com.massita.service.messaging.message.DbMessage;
+import com.massita.service.messaging.message.Message;
+import com.massita.service.messaging.message.ObjectMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +22,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
 import static com.massita.web.servlet.ServletHelper.getJsonWriter;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
@@ -28,17 +34,16 @@ public class UserDataSetServlet extends HttpServlet {
             = LoggerFactory.getLogger(UserDataSetServlet.class);
 
     private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
-    private final DBService<UserDataSet> dbService;
+    MessageService messageService;
     private final Gson gson;
 
-    public UserDataSetServlet(DBService<UserDataSet> dbService) {
-        this.dbService = dbService;
+    public UserDataSetServlet(MessageService messageService) {
+        this.messageService = messageService;
         this.gson = GsonService.getInstance().getGson();
     }
 
 
     @Override
-    @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 
         PrintWriter out = getJsonWriter(resp);
@@ -47,19 +52,36 @@ public class UserDataSetServlet extends HttpServlet {
         if (userId.isEmpty()) {
             return;
         }
+        AsyncContext asyncCtx = req.startAsync();
+        Address resultWaiterAddress = new Address();
+        MessageListener resultWaiter = new MessageListener() {
+            @Override
+            public void onMessage(Message message) {
+                if (message instanceof ObjectMessage) {
+                    ObjectMessage objectMessage = (ObjectMessage) message;
+                    Optional<UserDataSet> user = (Optional<UserDataSet>) objectMessage.getBody();
+                    if (user.isEmpty()) {
 
-        Optional<UserDataSet> user = dbService.readForClass(userId.get(), UserDataSet.class);
+                        resp.setStatus(NOT_FOUND.getCode());
+                        out.print(gson.toJson(Map.entry("message", String.format("User with id=%s not exist", userId.get()))));
+                        logger.warn("User with id {} does not exist", userId.get());
+                    } else {
+                        out.print(gson.toJson(user.get()));
+                        resp.setStatus(SC_OK);
+                    }
+                    messageService.unsubscribe(resultWaiterAddress, this);
 
-        if (user.isEmpty()) {
+                    asyncCtx.complete();
+                }
+            }
 
-            resp.setStatus(NOT_FOUND.getCode());
-            out.print(gson.toJson(Map.entry("message", String.format("User with id=%s not exist", userId.get()))));
-            logger.warn("User with id {} does not exist", userId.get());
-        } else {
-            out.print(gson.toJson(user.get()));
-            resp.setStatus(SC_OK);
-        }
-
+        };
+        messageService.subscribe(resultWaiterAddress, resultWaiter);
+        messageService.sendMessage(new DbMessage(resultWaiterAddress,
+                DB_SERVICE_ADDRESS,
+                DbMessage.DbMessageType.LOAD,
+                userId.get(),
+                UserDataSet.class));
     }
 
     private Optional<Long> getLongParameter(String parameterName, HttpServletRequest req, HttpServletResponse resp, PrintWriter out) {
@@ -84,7 +106,11 @@ public class UserDataSetServlet extends HttpServlet {
 
             UserDataSet user = gson.fromJson(serializedUser, UserDataSet.class);
 
-            dbService.save(user);
+            messageService.sendMessage(new DbMessage(null,
+                    DB_SERVICE_ADDRESS,
+                    DbMessage.DbMessageType.SAVE,
+                    user,
+                    UserDataSet.class));
 
             PrintWriter out = getJsonWriter(resp);
             out.print(gson.toJson(Map.entry("message", "User was saved")));

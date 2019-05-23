@@ -1,11 +1,11 @@
 package com.massita.service.messaging;
 
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.massita.service.messaging.message.Address;
 import com.massita.service.messaging.message.Message;
 import lombok.Setter;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -23,7 +23,7 @@ public class MessageService {
     private static final int DEFAULT_POOL_SIZE = 4;
 
     private LinkedBlockingQueue<Message> messages;
-    private MultiValuedMap<Address, MessageListener> addressMessageListeners;
+    private Multimap<Address, MessageListener> addressMessageListeners;
     private ScheduledExecutorService executorService;
 
     @Setter
@@ -31,7 +31,7 @@ public class MessageService {
 
     public MessageService() {
         this.messages = new LinkedBlockingQueue<>();
-        this.addressMessageListeners = new ArrayListValuedHashMap<>();
+        this.addressMessageListeners = HashMultimap.create();
     }
 
     public void sendMessage(Message message) {
@@ -42,12 +42,12 @@ public class MessageService {
         }
     }
 
-    public void subscribe(Address address, MessageListener listener){
+    public void subscribe(Address address, MessageListener listener) {
         addressMessageListeners.put(address, listener);
     }
 
-    public void unsubscribe(Address address, MessageListener listener){
-        addressMessageListeners.removeMapping(address, listener);
+    public void unsubscribe(Address address, MessageListener listener) {
+        addressMessageListeners.remove(address, listener);
     }
 
 
@@ -63,7 +63,7 @@ public class MessageService {
                 logger.log(Level.INFO, "Thread interrupted");
                             }
         };
-        executorService.scheduleAtFixedRate(messageListener, 0, 5,  TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(messageListener, 0, 50, TimeUnit.MILLISECONDS);
     }
 
     public void stop() {

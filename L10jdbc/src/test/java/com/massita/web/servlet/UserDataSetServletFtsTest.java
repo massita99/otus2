@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -28,8 +29,7 @@ import java.sql.Statement;
 import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UserDataSetServletFtsTest {
     @Mock
@@ -45,6 +45,9 @@ public class UserDataSetServletFtsTest {
     Connection connection;
     DDLService ddlService;
     MessageService messageService;
+
+    @Mock
+    AsyncContext asyncCtx;
 
 
     @Before
@@ -63,12 +66,16 @@ public class UserDataSetServletFtsTest {
         try (final Statement statement = connection.createStatement()) {
             statement.execute("insert into userdataset (name, age) values ('massita', 30 );");
         }
-        userDataSetServlet = new UserDataSetServlet(dbService);
         messageService = new MessageService();
         messageService.start();
         ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
         messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);
         userDataSetStatsServlet = new UserDataSetStatsServlet(messageService);
+        userDataSetServlet = new UserDataSetServlet(messageService);
+
+        when(request.startAsync()).thenReturn(asyncCtx);
+
+
 
     }
 
@@ -89,6 +96,7 @@ public class UserDataSetServletFtsTest {
 
         //DoWork Stage 1 first looking for existing
         userDataSetServlet.doGet(request, response);
+        Thread.sleep(200);
         String result = sw.getBuffer().toString();
         JSONObject object = new JSONObject(result);
 
@@ -107,7 +115,8 @@ public class UserDataSetServletFtsTest {
 
         //do work Stage 2 add user and check that count is 2
         userDataSetServlet.doPost(request, response);
-
+        // Wait for messageService
+        Thread.sleep(200);
         //Prepare for stat
         String[] reqParams = new String[]{"count"};
         when(request.getParameterValues("stat")).thenReturn(reqParams);
@@ -118,7 +127,7 @@ public class UserDataSetServletFtsTest {
         //do work 3 check stat
         userDataSetStatsServlet.doGet(request, response);
         // Wait for messageService
-        Thread.sleep(100);
+        Thread.sleep(200);
         result = sw.getBuffer().toString();
         object = new JSONObject(result);
 

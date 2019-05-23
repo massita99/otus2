@@ -40,7 +40,8 @@ public class WebServer {
         messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);
 
         //Add custom servlets
-        context.addServlet(new ServletHolder(new UserDataSetServlet(dbService)), "/user");
+        context.addServlet(new ServletHolder(new UserDataSetServlet(messageService)), "/user");
+
         context.addServlet(new ServletHolder(new UserDataSetStatsServlet(messageService)), "/stat");
 
         ResourceHandler resource_handler = new ResourceHandler();

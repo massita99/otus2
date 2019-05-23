@@ -34,7 +34,7 @@ public class UserDataSetStatsServlet extends HttpServlet {
 
     public static final String COUNT = "count";
     private final Gson gson;
-    MessageService messageService;
+    private MessageService messageService;
 
     public UserDataSetStatsServlet(MessageService messageService) {
         this.messageService = messageService;

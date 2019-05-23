@@ -1,7 +1,10 @@
 package com.massita.web.servlet;
 
 import com.massita.model.UserDataSet;
-import com.massita.service.db.DBService;
+import com.massita.service.messaging.MessageListener;
+import com.massita.service.messaging.MessageService;
+import com.massita.service.messaging.message.Message;
+import com.massita.service.messaging.message.ObjectMessage;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -20,6 +24,7 @@ import java.util.Optional;
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +37,10 @@ public class UserDataSetServletTest {
     HttpServletResponse response;
 
     @Mock
-    DBService<UserDataSet> dbService;
+    MessageService messageService;
+
+    @Mock
+    AsyncContext asyncCtx;
 
     UserDataSetServlet userDataSetServlet;
 
@@ -40,7 +48,9 @@ public class UserDataSetServletTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        userDataSetServlet =new UserDataSetServlet(dbService);
+
+        userDataSetServlet =new UserDataSetServlet(messageService);
+        when(request.startAsync()).thenReturn(asyncCtx);
 
     }
 
@@ -49,7 +59,8 @@ public class UserDataSetServletTest {
     public void doGetPositive() throws Exception{
         //Mocking
         when(request.getParameter("id")).thenReturn("1");
-        when(dbService.readForClass(1l, UserDataSet.class)).thenReturn(Optional.of(new UserDataSet("mass", 20)));
+
+        ArgumentCaptor<MessageListener> listenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -57,6 +68,9 @@ public class UserDataSetServletTest {
 
         //DoWork
         userDataSetServlet.doGet(request, response);
+        //Simulate return Message
+        sendServiceAnswer(new ObjectMessage(null, null, Optional.of(new UserDataSet("mass", 20))), listenerCaptor);
+
         String result = sw.getBuffer().toString();
         JSONObject object = new JSONObject(result);
 
@@ -68,13 +82,16 @@ public class UserDataSetServletTest {
     @Test
     public void doGetNegative() throws Exception {
         when(request.getParameter("id")).thenReturn("2");
-        when(dbService.readForClass(2l, UserDataSet.class)).thenReturn(Optional.empty());
+        //when(dbService.readForClass(2l, UserDataSet.class)).thenReturn(Optional.empty());
+        ArgumentCaptor<MessageListener> listenerCaptor = ArgumentCaptor.forClass(MessageListener.class);
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         when(response.getWriter()).thenReturn(pw);
 
         userDataSetServlet.doGet(request, response);
+        //Simulate return Message
+        sendServiceAnswer(new ObjectMessage(null, null, Optional.empty()), listenerCaptor);
 
         verify(response).setStatus(NOT_FOUND.getCode());
     }
@@ -83,7 +100,7 @@ public class UserDataSetServletTest {
     public void doPostPositive() throws Exception{
         //Mocking
 
-        ArgumentCaptor<UserDataSet> userCaptor = ArgumentCaptor.forClass(UserDataSet.class);
+        ArgumentCaptor<ObjectMessage> messageCaptor = ArgumentCaptor.forClass(ObjectMessage.class);
 
         StringReader sr = new StringReader("{\"name\":\"mass\",\"age\":20}");
         BufferedReader pr = new BufferedReader(sr);
@@ -96,7 +113,12 @@ public class UserDataSetServletTest {
 
         //Verify
         verify(response).setStatus(OK.getCode());
-        verify(dbService).save(userCaptor.capture());
-        assertEquals(userCaptor.getValue().getName(), "mass");
+        verify(messageService).sendMessage(messageCaptor.capture());
+        assertEquals(((UserDataSet)messageCaptor.getValue().getBody()).getName(), "mass");
+    }
+
+    private void sendServiceAnswer(Message message, ArgumentCaptor<MessageListener> captor) {
+        verify(messageService).subscribe(any(), captor.capture());
+        captor.getValue().onMessage(message);
     }
 }
