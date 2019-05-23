@@ -63,7 +63,7 @@ public class MessageService {
                 logger.log(Level.INFO, "Thread interrupted");
                             }
         };
-        executorService.schedule(messageListener, 1, TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(messageListener, 0, 5,  TimeUnit.MILLISECONDS);
     }
 
     public void stop() {

@@ -8,6 +8,8 @@ import com.massita.service.db.DDLService;
 import com.massita.service.db.DDLServiceImpl;
 import com.massita.service.db.hibernate.DBServiceHibernateImpl;
 import com.massita.service.db.util.dbcommon.ConnectionHelper;
+import com.massita.service.messaging.MessageListener;
+import com.massita.service.messaging.MessageService;
 import lombok.SneakyThrows;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -19,6 +21,8 @@ import org.hibernate.cfg.Configuration;
 
 import java.sql.Connection;
 
+import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
+
 public class WebServer {
 
     private final static int PORT = 8080;
@@ -29,9 +33,15 @@ public class WebServer {
 
         Server server = new Server(PORT);
 
+        DBService<UserDataSet> dbService = getDbService();
+        MessageService messageService = getMessageService();
+
+        ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
+        messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);
+
         //Add custom servlets
-        context.addServlet(new ServletHolder(new UserDataSetServlet(getDbService())), "/user");
-        context.addServlet(new ServletHolder(new UserDataSetStatsServlet(getDbService())), "/stat");
+        context.addServlet(new ServletHolder(new UserDataSetServlet(dbService)), "/user");
+        context.addServlet(new ServletHolder(new UserDataSetStatsServlet(messageService)), "/stat");
 
         ResourceHandler resource_handler = new ResourceHandler();
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -63,5 +73,11 @@ public class WebServer {
         DDLService ddlService = new DDLServiceImpl(connection);
         ddlService.prepareTables();
         return dbService;
+    }
+
+    private MessageService getMessageService() {
+        MessageService service = new MessageService();
+        service.start();
+        return service;
     }
 }
