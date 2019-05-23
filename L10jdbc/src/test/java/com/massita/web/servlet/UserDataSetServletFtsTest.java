@@ -1,4 +1,3 @@
-/*
 package com.massita.web.servlet;
 
 import com.massita.model.AddressDataSet;
@@ -9,6 +8,8 @@ import com.massita.service.db.DDLService;
 import com.massita.service.db.DDLServiceImpl;
 import com.massita.service.db.hibernate.DBServiceHibernateImpl;
 import com.massita.service.db.util.dbcommon.ConnectionHelper;
+import com.massita.service.messaging.MessageListener;
+import com.massita.service.messaging.MessageService;
 import org.hibernate.cfg.Configuration;
 import org.json.JSONObject;
 import org.junit.After;
@@ -24,6 +25,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -42,6 +44,7 @@ public class UserDataSetServletFtsTest {
     UserDataSetStatsServlet userDataSetStatsServlet;
     Connection connection;
     DDLService ddlService;
+    MessageService messageService;
 
 
     @Before
@@ -61,7 +64,11 @@ public class UserDataSetServletFtsTest {
             statement.execute("insert into userdataset (name, age) values ('massita', 30 );");
         }
         userDataSetServlet = new UserDataSetServlet(dbService);
-        userDataSetStatsServlet = new UserDataSetStatsServlet(dbService);
+        messageService = new MessageService();
+        messageService.start();
+        ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
+        messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);
+        userDataSetStatsServlet = new UserDataSetStatsServlet(messageService);
 
     }
 
@@ -110,10 +117,12 @@ public class UserDataSetServletFtsTest {
 
         //do work 3 check stat
         userDataSetStatsServlet.doGet(request, response);
+        // Wait for messageService
+        Thread.sleep(100);
         result = sw.getBuffer().toString();
         object = new JSONObject(result);
 
         //Verify
         assertEquals(object.get("count").toString(), "[\"2\"]");
     }
-}*/
+}
