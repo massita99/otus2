@@ -13,10 +13,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 
 /**
- * Define a messaging service that broadcast messages for listeners
+ * Define a messaging service that broadcast messages for All listeners
+ * who subscribed on message {@link Address}
+ * Listener itself decided handle message or not
  */
 public class MessageService {
     private final static Logger logger = Logger.getLogger(MessageService.class.getName());
@@ -58,12 +61,12 @@ public class MessageService {
                 Message message = messages.take();
                 //Broadcast message
                 addressMessageListeners.get(message.getTo()).forEach(l -> l.onMessage(message));
-
             } catch (InterruptedException e) {
                 logger.log(Level.INFO, "Thread interrupted");
-                            }
+            }
         };
-        executorService.scheduleAtFixedRate(messageListener, 0, 50, TimeUnit.MILLISECONDS);
+
+        IntStream.range(0, poolSize).forEach((x) -> executorService.scheduleAtFixedRate(messageListener, 0, 50, TimeUnit.MICROSECONDS));
     }
 
     public void stop() {

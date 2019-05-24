@@ -4,6 +4,9 @@ import lombok.Getter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Define address that identify {@link Message} receiver and sender
+ */
 public class Address {
 
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger();

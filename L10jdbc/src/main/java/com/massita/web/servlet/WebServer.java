@@ -33,10 +33,9 @@ public class WebServer {
 
         Server server = new Server(PORT);
 
-        DBService<UserDataSet> dbService = getDbService();
-        MessageService messageService = getMessageService();
+        MessageService messageService = prepareMessageService();
+        DBService<UserDataSet> dbService = prepareDbService(messageService);
 
-        ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
         messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);
 
         //Add custom servlets
@@ -63,7 +62,7 @@ public class WebServer {
     }
 
     @SneakyThrows
-    private DBService<UserDataSet> getDbService() {
+    private DBService<UserDataSet> prepareDbService(MessageService messageService) {
         Connection connection = ConnectionHelper.getConnection();
         Configuration configuration = new Configuration()
                 .configure("service/db/hibernate/hibernate.cfg.xml")
@@ -71,12 +70,14 @@ public class WebServer {
                 .addAnnotatedClass(PhoneDataSet.class)
                 .addAnnotatedClass(AddressDataSet.class);
         DBService dbService = new DBServiceHibernateImpl<>(configuration);
+        ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
+
         DDLService ddlService = new DDLServiceImpl(connection);
         ddlService.prepareTables();
         return dbService;
     }
 
-    private MessageService getMessageService() {
+    private MessageService prepareMessageService() {
         MessageService service = new MessageService();
         service.start();
         return service;

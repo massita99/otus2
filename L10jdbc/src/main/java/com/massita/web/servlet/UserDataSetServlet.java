@@ -3,12 +3,9 @@ package com.massita.web.servlet;
 import com.google.gson.Gson;
 import com.massita.model.UserDataSet;
 import com.massita.service.GsonService;
-import com.massita.service.messaging.MessageListener;
 import com.massita.service.messaging.MessageService;
-import com.massita.service.messaging.message.Address;
 import com.massita.service.messaging.message.DbMessage;
 import com.massita.service.messaging.message.Message;
-import com.massita.service.messaging.message.ObjectMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
+import static com.massita.web.servlet.ServletHelper.doAsyncGet;
 import static com.massita.web.servlet.ServletHelper.getJsonWriter;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
@@ -46,20 +44,23 @@ public class UserDataSetServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 
-        PrintWriter out = getJsonWriter(resp);
-
-        Optional<Long> userId = getLongParameter("id", req, resp, out);
+        Optional<Long> userId = getLongParameter("id", req, resp);
         if (userId.isEmpty()) {
             return;
         }
         AsyncContext asyncCtx = req.startAsync();
-        Address resultWaiterAddress = new Address();
-        MessageListener resultWaiter = new MessageListener() {
-            @Override
-            public void onMessage(Message message) {
-                if (message instanceof ObjectMessage) {
-                    ObjectMessage objectMessage = (ObjectMessage) message;
-                    Optional<UserDataSet> user = (Optional<UserDataSet>) objectMessage.getBody();
+
+        Message messageToDb = new DbMessage(null,
+                DB_SERVICE_ADDRESS,
+                DbMessage.DbMessageType.LOAD,
+                userId.get(),
+                UserDataSet.class);
+
+        doAsyncGet(messageService, messageToDb, asyncCtx,
+                receivedMessage -> {
+                    Optional<UserDataSet> user = (Optional<UserDataSet>) receivedMessage.getBody();
+
+                    PrintWriter out = getJsonWriter(resp);
                     if (user.isEmpty()) {
 
                         resp.setStatus(NOT_FOUND.getCode());
@@ -69,27 +70,17 @@ public class UserDataSetServlet extends HttpServlet {
                         out.print(gson.toJson(user.get()));
                         resp.setStatus(SC_OK);
                     }
-                    messageService.unsubscribe(resultWaiterAddress, this);
-
-                    asyncCtx.complete();
                 }
-            }
-
-        };
-        messageService.subscribe(resultWaiterAddress, resultWaiter);
-        messageService.sendMessage(new DbMessage(resultWaiterAddress,
-                DB_SERVICE_ADDRESS,
-                DbMessage.DbMessageType.LOAD,
-                userId.get(),
-                UserDataSet.class));
+        );
     }
 
-    private Optional<Long> getLongParameter(String parameterName, HttpServletRequest req, HttpServletResponse resp, PrintWriter out) {
+    private Optional<Long> getLongParameter(String parameterName, HttpServletRequest req, HttpServletResponse resp) {
         Long userId;
         String requestedId = req.getParameter(parameterName);
         try {
             userId = Long.parseLong(requestedId);
         } catch (NumberFormatException e) {
+            PrintWriter out = getJsonWriter(resp);
             resp.setStatus(NOT_FOUND.getCode());
             out.print(gson.toJson(Map.entry("message", String.format("%s %s should be numeric", parameterName, requestedId))));
             logger.warn("{} {} should be numeric", parameterName, requestedId);
@@ -100,6 +91,7 @@ public class UserDataSetServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         String serializedUser = getRequestBody(req, resp);
 
         if (!serializedUser.isEmpty()) {
