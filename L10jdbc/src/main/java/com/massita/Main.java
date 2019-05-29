@@ -1,6 +1,6 @@
 package com.massita;
 
-import com.massita.web.servlet.WebServer;
+import com.massita.web.WebServer;
 
 public class Main {
 
