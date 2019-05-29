@@ -21,7 +21,6 @@ public class WebServer {
 
         Server server = new Server(PORT);
 
-        ServiceRunner.runAllServices();
         MessageService messageService = ServiceRunner.context.getMessageService();
 
         //Add custom servlets
