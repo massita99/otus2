@@ -8,8 +8,13 @@ import com.massita.service.messaging.message.DbMessage;
 import com.massita.service.messaging.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,21 +30,34 @@ import static com.massita.web.servlet.ServletHelper.getJsonWriter;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
 
-
+@Configurable
 public class UserDataSetServlet extends HttpServlet {
 
     private static final Logger logger
             = LoggerFactory.getLogger(UserDataSetServlet.class);
 
     private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
-    MessageService messageService;
-    private final Gson gson;
 
-    public UserDataSetServlet(MessageService messageService) {
-        this.messageService = messageService;
-        this.gson = GsonService.getInstance().getGson();
+    @Autowired
+    private MessageService messageService;
+    private Gson gson;
+
+    public UserDataSetServlet() {
     }
 
+    public UserDataSetServlet(MessageService messageService) {
+        this.gson = GsonService.getInstance().getGson();
+        this.messageService = messageService;
+    }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException{
+        super.init(config);
+        this.gson = GsonService.getInstance().getGson();
+        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+        logger.info("Servlet UserDataSetServlet started");
+
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {

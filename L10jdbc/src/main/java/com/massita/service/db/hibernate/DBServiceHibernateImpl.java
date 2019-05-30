@@ -14,13 +14,16 @@ import org.hibernate.*;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, MessageListener {
+import static com.massita.service.messaging.message.DbMessage.DB_SERVICE_ADDRESS;
+
+public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, MessageListener, InitializingBean {
 
     private final static Logger logger = Logger.getLogger(DBServiceHibernateImpl.class.getName());
 
@@ -106,5 +109,10 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
             default:
                 logger.log(Level.WARNING, "Unknown dbMessage type: " + dbMessage.getMessageType());
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        messageService.subscribe(DB_SERVICE_ADDRESS, this);
     }
 }

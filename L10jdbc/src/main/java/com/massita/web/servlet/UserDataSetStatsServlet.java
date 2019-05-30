@@ -9,8 +9,12 @@ import com.massita.service.messaging.message.Message;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,12 +35,23 @@ public class UserDataSetStatsServlet extends HttpServlet {
             = LoggerFactory.getLogger(UserDataSetStatsServlet.class);
 
     public static final String COUNT = "count";
-    private final Gson gson;
+    private Gson gson;
+
+    @Autowired
     private MessageService messageService;
 
     public UserDataSetStatsServlet(MessageService messageService) {
         this.messageService = messageService;
         this.gson = GsonService.getInstance().getGson();
+    }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        this.gson = GsonService.getInstance().getGson();
+        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+        logger.info("Servlet UserDataSetStatsServlet started");
+
     }
 
 
