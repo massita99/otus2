@@ -16,6 +16,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -35,6 +36,14 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
     public DBServiceHibernateImpl(Configuration configuration) {
 
         sessionFactory = createSessionFactory(configuration);
+    }
+
+    public DBServiceHibernateImpl(List<Class<?>> classes, MessageService messageService) {
+        Configuration configuration = new Configuration()
+                .configure("service/db/hibernate/hibernate.cfg.xml");
+        classes.forEach(configuration::addAnnotatedClass);
+        sessionFactory = createSessionFactory(configuration);
+        this.messageService = messageService;
     }
 
     private static SessionFactory createSessionFactory(Configuration configuration) {

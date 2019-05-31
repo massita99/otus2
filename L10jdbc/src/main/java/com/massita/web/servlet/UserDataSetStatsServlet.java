@@ -48,7 +48,6 @@ public class UserDataSetStatsServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        this.gson = GsonService.getInstance().getGson();
         SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
         logger.info("Servlet UserDataSetStatsServlet started");
 

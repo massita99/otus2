@@ -40,6 +40,7 @@ public class UserDataSetServlet extends HttpServlet {
 
     @Autowired
     private MessageService messageService;
+    @Autowired
     private Gson gson;
 
     public UserDataSetServlet() {
@@ -53,7 +54,6 @@ public class UserDataSetServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException{
         super.init(config);
-        this.gson = GsonService.getInstance().getGson();
         SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
         logger.info("Servlet UserDataSetServlet started");
 

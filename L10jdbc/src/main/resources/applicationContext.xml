@@ -3,10 +3,24 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <bean id="dbService" class="com.massita.service.ServiceRunner" factory-method="prepareDbService">
+
+
+    <bean id="dbService" class="com.massita.service.db.hibernate.DBServiceHibernateImpl" >
+        <constructor-arg>
+            <util:list value-type="java.lang.Class">
+                <value>com.massita.model.AddressDataSet</value>
+                <value>com.massita.model.PhoneDataSet</value>
+                <value>com.massita.model.UserDataSet</value>
+            </util:list>
+        </constructor-arg>
         <constructor-arg ref="messageService"/>
     </bean>
 
-    <bean id="messageService" class="com.massita.service.ServiceRunner" factory-method="prepareMessageService"/>
+    <bean id="messageService" class="com.massita.service.messaging.MessageService"/>
+
+    <bean id="gsonService" class="com.massita.service.GsonService" factory-method="getInstance"/>
+
+    <bean id="gson" factory-bean="gsonService" factory-method="getGson"/>
+
 
 </beans>

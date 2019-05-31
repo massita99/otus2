@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.massita.service.messaging.message.Address;
 import com.massita.service.messaging.message.Message;
 import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,7 +22,7 @@ import java.util.stream.IntStream;
  * who subscribed on message {@link Address}
  * Listener itself decided handle message or not
  */
-public class MessageService {
+public class MessageService implements InitializingBean {
     private final static Logger logger = Logger.getLogger(MessageService.class.getName());
     private static final int DEFAULT_POOL_SIZE = 4;
 
@@ -71,5 +72,10 @@ public class MessageService {
 
     public void stop() {
         executorService.shutdown();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.start();
     }
 }
