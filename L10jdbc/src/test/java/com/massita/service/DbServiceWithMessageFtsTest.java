@@ -10,6 +10,7 @@ import com.massita.service.db.hibernate.DBServiceHibernateImpl;
 import com.massita.service.db.util.dbcommon.ConnectionHelper;
 import com.massita.service.messaging.MessageListener;
 import com.massita.service.messaging.MessageService;
+import com.massita.service.messaging.MessageServiceImpl;
 import com.massita.service.messaging.message.Address;
 import com.massita.service.messaging.message.DbMessage;
 import com.massita.service.messaging.message.Message;
@@ -49,7 +50,7 @@ public class DbServiceWithMessageFtsTest {
         try (final Statement statement = connection.createStatement()) {
             statement.execute("INSERT INTO userdataset (name, age) VALUES ('massita', 30 );");
         }
-        messageService = new MessageService();
+        messageService = new MessageServiceImpl();
         messageService.start();
         dbServiceAddress = new Address("DB");
         //((DBServiceHibernateImpl)dbService).setMessageService(messageService);

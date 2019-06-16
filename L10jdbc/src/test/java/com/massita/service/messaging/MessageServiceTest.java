@@ -27,7 +27,7 @@ public class MessageServiceTest {
     @Before
     public void setUp(){
         MockitoAnnotations.initMocks(this);
-        messageService = new MessageService();
+        messageService = new MessageServiceImpl();
         messageService.start();
         from = new Address();
         to = new Address();

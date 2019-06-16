@@ -9,7 +9,7 @@ import com.massita.service.db.DDLServiceImpl;
 import com.massita.service.db.hibernate.DBServiceHibernateImpl;
 import com.massita.service.db.util.dbcommon.ConnectionHelper;
 import com.massita.service.messaging.MessageListener;
-import com.massita.service.messaging.MessageService;
+import com.massita.service.messaging.MessageServiceImpl;
 import org.hibernate.cfg.Configuration;
 import org.json.JSONObject;
 import org.junit.After;
@@ -44,7 +44,7 @@ public class UserDataSetServletFtsTest {
     UserDataSetStatsServlet userDataSetStatsServlet;
     Connection connection;
     DDLService ddlService;
-    MessageService messageService;
+    MessageServiceImpl messageService;
 
     @Mock
     AsyncContext asyncCtx;
@@ -66,7 +66,7 @@ public class UserDataSetServletFtsTest {
         try (final Statement statement = connection.createStatement()) {
             statement.execute("insert into userdataset (name, age) values ('massita', 30 );");
         }
-        messageService = new MessageService();
+        messageService = new MessageServiceImpl();
         messageService.start();
         ((DBServiceHibernateImpl)dbService).setMessageService(messageService);
         messageService.subscribe(DB_SERVICE_ADDRESS, (MessageListener) dbService);

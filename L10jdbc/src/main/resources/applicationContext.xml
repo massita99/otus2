@@ -16,7 +16,7 @@
         <constructor-arg ref="messageService"/>
     </bean>
 
-    <bean id="messageService" class="com.massita.service.messaging.MessageService"/>
+    <bean id="messageService" class="com.massita.service.messaging.MessageServiceImpl"/>
 
     <bean id="gsonService" class="com.massita.service.GsonService" factory-method="getInstance"/>
 

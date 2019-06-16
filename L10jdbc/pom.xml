@@ -9,8 +9,6 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-
-
     <developers>
         <developer>
             <name>maximk</name>
@@ -36,25 +34,39 @@
 
         <plugins>
 
-                <plugin>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <configuration>
-                        <webXml>src/main/resources/WEB-INF/web.xml</webXml>
-                        <webResources>
-                            <resource>
-                                <directory>src/main/resources</directory>
-                            </resource>
-                        </webResources>
-                    </configuration>
-                </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webXml>src/main/resources/WEB-INF/web.xml</webXml>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-a-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.4.18.v20190429</version>
-                    <configuration>
-                        <war>${project.basedir}/target/L10jdbc.war</war>
-                    </configuration>
+                <configuration>
+                    <war>${project.basedir}/target/L10jdbc.war</war>
+                </configuration>
             </plugin>
 
         </plugins>
@@ -177,16 +189,8 @@
             <artifactId>spring-beans</artifactId>
             <groupId>org.springframework</groupId>
             <version>${spring.version}</version>
-
         </dependency>
 
-
-
-
-
-
-
     </dependencies>
-
 
 </project>
