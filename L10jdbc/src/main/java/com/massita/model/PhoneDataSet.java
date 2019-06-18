@@ -17,5 +17,8 @@ public class PhoneDataSet extends DataSet {
     @Setter
     private String number;
 
-
+    @Override
+    public PhoneDataSet makeClone() {
+        return new PhoneDataSet(number);
+    }
 }

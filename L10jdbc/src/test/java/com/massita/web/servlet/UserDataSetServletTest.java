@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Optional;
 
 import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
@@ -69,7 +68,7 @@ public class UserDataSetServletTest {
         //DoWork
         userDataSetServlet.doGet(request, response);
         //Simulate return Message
-        sendServiceAnswer(new ObjectMessage(null, null, Optional.of(new UserDataSet("mass", 20))), listenerCaptor);
+        sendServiceAnswer(new ObjectMessage(null, null, new UserDataSet("mass", 20)), listenerCaptor);
 
         String result = sw.getBuffer().toString();
         JSONObject object = new JSONObject(result);
@@ -91,7 +90,7 @@ public class UserDataSetServletTest {
 
         userDataSetServlet.doGet(request, response);
         //Simulate return Message
-        sendServiceAnswer(new ObjectMessage(null, null, Optional.empty()), listenerCaptor);
+        sendServiceAnswer(new ObjectMessage(null, null, null), listenerCaptor);
 
         verify(response).setStatus(NOT_FOUND.getCode());
     }

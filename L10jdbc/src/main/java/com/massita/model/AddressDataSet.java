@@ -17,4 +17,9 @@ public class AddressDataSet extends DataSet {
     @Getter
     @Setter
     private String street;
+
+    @Override
+    public AddressDataSet makeClone() {
+        return new AddressDataSet(street);
+    }
 }

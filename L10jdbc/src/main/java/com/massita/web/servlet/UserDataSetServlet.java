@@ -76,16 +76,16 @@ public class UserDataSetServlet extends HttpServlet {
 
         doAsyncGet(messageService, messageToDb, asyncCtx,
                 receivedMessage -> {
-                    Optional<UserDataSet> user = (Optional<UserDataSet>) receivedMessage.getBody();
+                    UserDataSet user = (UserDataSet) receivedMessage.getBody();
 
                     PrintWriter out = getJsonWriter(resp);
-                    if (user.isEmpty()) {
+                    if (user == null) {
 
                         resp.setStatus(NOT_FOUND.getCode());
                         out.print(gson.toJson(Map.entry("message", String.format("User with id=%s not exist", userId.get()))));
                         logger.warn("User with id {} does not exist", userId.get());
                     } else {
-                        out.print(gson.toJson(user.get()));
+                        out.print(gson.toJson(user));
                         resp.setStatus(SC_OK);
                     }
                 }

@@ -18,4 +18,6 @@ public abstract class DataSet {
 
     private long id;
 
+    abstract public <T extends DataSet> T makeClone();
+
 }

@@ -16,6 +16,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -44,6 +45,7 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
         classes.forEach(configuration::addAnnotatedClass);
         sessionFactory = createSessionFactory(configuration);
         this.messageService = messageService;
+        System.out.println("DbService start");
     }
 
     private static SessionFactory createSessionFactory(Configuration configuration) {
@@ -64,6 +66,7 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
     }
 
     @Override
+    @Transactional
     public Optional<T> readForClass(long id, Class<T> clazz) {
         return runInSession(session -> {
             DataSetDao<T> dao = new DataSetDaoHibernateImpl<>(session);
@@ -107,8 +110,13 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
                 break;
             case LOAD:
                 Optional<T> result = this.readForClass((Long) dbMessage.getBody(), (Class<T>) dbMessage.getObjectType());
+                if (result.isPresent()) {
                 //Send return message back to sender
-                messageService.sendMessage(new ObjectMessage(message.getTo(), message.getFrom(), result));
+                    messageService.sendMessage(new ObjectMessage(message.getTo(), message.getFrom(), initializeAndUnproxy(result.get())));
+                } else {
+                    messageService.sendMessage(new ObjectMessage(message.getTo(), message.getFrom(), null));
+                }
+
                 break;
             case COUNT:
                 long count = this.count((Class<T>) dbMessage.getObjectType());
@@ -118,6 +126,14 @@ public class DBServiceHibernateImpl<T extends DataSet> implements DBService<T>, 
             default:
                 logger.log(Level.WARNING, "Unknown dbMessage type: " + dbMessage.getMessageType());
         }
+    }
+
+    private  <T extends DataSet> T initializeAndUnproxy(T entity) {
+        if (entity == null) {
+            throw new
+                    NullPointerException("Entity passed for initialization is null");
+        }
+        return entity.makeClone();
     }
 
     @Override

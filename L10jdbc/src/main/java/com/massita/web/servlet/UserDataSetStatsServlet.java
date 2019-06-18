@@ -35,6 +35,8 @@ public class UserDataSetStatsServlet extends HttpServlet {
             = LoggerFactory.getLogger(UserDataSetStatsServlet.class);
 
     public static final String COUNT = "count";
+
+    @Autowired
     private Gson gson;
 
     @Autowired

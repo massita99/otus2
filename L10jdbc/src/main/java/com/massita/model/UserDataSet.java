@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -28,7 +29,7 @@ public class UserDataSet extends DataSet {
     @Setter
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private Set<PhoneDataSet> phones;
+    private Set<PhoneDataSet> phones = new HashSet<>();
 
 
     @Column(name = "name")
@@ -36,4 +37,14 @@ public class UserDataSet extends DataSet {
 
     @Column(name = "age")
     private int age;
+
+    @Override
+    public UserDataSet makeClone() {
+        UserDataSet clonned = new UserDataSet(name, age);
+        HashSet<PhoneDataSet> phoneDataSets = new HashSet<>();
+        phoneDataSets.addAll(phones);
+        clonned.setPhones(phoneDataSets);
+        clonned.setAddress(address);
+        return clonned;
+    }
 }
